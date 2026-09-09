@@ -1,0 +1,122 @@
+# ================================
+# Python
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# ================================
+# Virtual Environment
+# ================================
+.venv/
+venv/
+env/
+ENV/
+
+# ================================
+# Environment / Secrets
+# ================================
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.crt
+credentials.json
+service-account.json
+
+# ================================
+# Jupyter
+# ================================
+.ipynb_checkpoints/
+
+# ================================
+# Testing / Coverage
+# ================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# ================================
+# Build / Distribution
+# ================================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ================================
+# Logs
+# ================================
+*.log
+logs/
+
+# ================================
+# IDE
+# ================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+.idea/
+*.swp
+*.swo
+
+# ================================
+# OS
+# ================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+# Temporary Files
+# ================================
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ================================
+# Local Data / Generated Files
+# ================================
+data/raw/
+data/processed/
+data/generated/
+outputs/
+artifacts/
+
+# ================================
+# Model / Vector Store Files
+# ================================
+*.pkl
+*.pickle
+*.joblib
+*.bin
+*.safetensors
+*.onnx
+*.faiss
+
+# ================================
+# Local Cache
+# ================================
+.cache/
+.cache/**
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ================================
+# Secrets / Local Configuration
+# ================================
+*.secret
+secrets/
+credentials/

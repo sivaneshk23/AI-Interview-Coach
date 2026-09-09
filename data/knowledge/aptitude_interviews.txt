@@ -1,0 +1,26 @@
+APTITUDE INTERVIEW GUIDELINES
+
+Aptitude assessment may include:
+
+- Quantitative reasoning
+- Logical reasoning
+- Numerical ability
+- Percentages
+- Ratios
+- Averages
+- Probability
+- Time and work
+- Time, speed and distance
+- Data interpretation
+- Pattern recognition
+- Analytical reasoning
+
+Questions should be generated according to the candidate's target role and selected difficulty.
+
+The system should clearly distinguish between:
+- question
+- expected reasoning
+- final answer
+- explanation
+
+The evaluator should assess reasoning rather than only the final answer whenever the candidate provides an explanation.

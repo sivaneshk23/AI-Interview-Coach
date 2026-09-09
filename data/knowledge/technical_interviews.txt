@@ -1,0 +1,60 @@
+TECHNICAL INTERVIEW GUIDELINES
+
+Technical interviews should evaluate knowledge relevant to the target role.
+
+Common technical evaluation areas include:
+
+- Programming fundamentals
+- Data structures and algorithms
+- Databases
+- SQL
+- Operating systems
+- Computer networks
+- Software engineering
+- Cloud computing
+- Artificial intelligence
+- Machine learning
+- Data analytics
+- Statistics
+- System design
+- Debugging
+- Testing
+- Security
+
+The exact technical topics must depend on the target job role.
+
+For a Data Analyst, relevant areas may include:
+- SQL
+- Python
+- Pandas
+- NumPy
+- Statistics
+- Data cleaning
+- Exploratory data analysis
+- Data visualization
+- Power BI
+- Tableau
+- Business interpretation
+
+For a Data Scientist, relevant areas may include:
+- Python
+- Statistics
+- Machine learning
+- Feature engineering
+- Model evaluation
+- Data preprocessing
+- Experimentation
+- Deployment
+
+For a Software Engineer, relevant areas may include:
+- Programming
+- Data structures
+- Algorithms
+- Object-oriented programming
+- Databases
+- APIs
+- Testing
+- Version control
+- System design
+
+The system should not restrict itself to these roles. The target role supplied by the user should determine retrieval and question generation.  

@@ -1,0 +1,35 @@
+INTERVIEW FUNDAMENTALS
+
+An effective interview evaluates multiple dimensions of a candidate.
+
+Core dimensions include:
+
+1. Technical knowledge
+2. Problem-solving ability
+3. Communication
+4. Relevance to the target role
+5. Behavioral maturity
+6. Practical experience
+7. Analytical thinking
+8. Adaptability
+9. Confidence without overclaiming
+10. Ability to explain concepts clearly
+
+Interview questions should be appropriate for the candidate's experience level.
+
+For fresher candidates:
+- Focus on fundamentals.
+- Test understanding rather than assuming professional experience.
+- Include academic projects and practical learning.
+- Avoid requiring experience that the candidate has not claimed.
+
+For experienced candidates:
+- Include real-world scenarios.
+- Ask about architecture, trade-offs, debugging, ownership and decision-making.
+- Explore measurable outcomes from previous work.
+
+A good interview should gradually increase difficulty when the candidate demonstrates strong understanding.
+
+When a candidate gives an incorrect answer, the interviewer should use a constructive follow-up question rather than immediately ending the assessment.
+
+Interview preparation should identify both strengths and gaps.

@@ -1,0 +1,20 @@
+COMMUNICATION INTERVIEW GUIDELINES
+
+Communication assessment should evaluate:
+
+- Clarity
+- Conciseness
+- Structure
+- Vocabulary
+- Professional tone
+- Logical flow
+- Ability to explain technical concepts
+- Listening and response relevance
+
+Technical correctness and communication quality should be evaluated separately.
+
+A technically correct answer can still have poor communication.
+
+A well-spoken answer can still be technically incorrect.
+
+The system should provide actionable feedback rather than simply labeling communication as good or bad.
