@@ -7,12 +7,9 @@ uses EvaluatorAgent with RAG context.
 
 import logging
 
-from app.interview_engine import InterviewEngine
+from app.engine_provider import get_engine
 
 logger = logging.getLogger(__name__)
-
-# Module-level engine so the RAG index is loaded once per process.
-_engine = InterviewEngine()
 
 
 class EvaluationService:
@@ -36,14 +33,15 @@ class EvaluationService:
         if not answer or not answer.strip():
             raise ValueError("Answer cannot be empty.")
 
-        session = _engine.create_session(
+        engine = get_engine()
+        session = engine.create_session(
             candidate_name="candidate",
             role=role,
             experience_level=experience_level,
             interview_type=interview_type,
         )
 
-        return _engine.submit_answer(
+        return engine.submit_answer(
             session=session,
             question=question,
             answer=answer,

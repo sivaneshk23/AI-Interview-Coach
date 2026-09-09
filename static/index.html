@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Interview Coach — IBM watsonx.ai</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      background: #f4f6fb;
+      color: #1b1f2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────────── */
+    .shell {
+      width: 100%;
+      max-width: 780px;
+      padding: 0 16px 48px;
+    }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    .header {
+      padding: 28px 0 20px;
+      text-align: center;
+      border-bottom: 1px solid #dde1ec;
+      margin-bottom: 36px;
+    }
+    .header__logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .header__ibm-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #0062ff;
+    }
+    .header__title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #0062ff;
+    }
+    .header__subtitle {
+      font-size: 0.875rem;
+      color: #5a5f7a;
+      margin-top: 4px;
+    }
+    .header__tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #e8efff;
+      color: #0043ce;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+
+    /* ── Cards ────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid #dde1ec;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .card__title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1b1f2e;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #0062ff;
+    }
+
+    /* ── Screens ──────────────────────────────────────────────────── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Welcome ──────────────────────────────────────────────────── */
+    .welcome__description {
+      font-size: 1rem;
+      color: #3d4263;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .welcome__features {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+    .welcome__features li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      color: #3d4263;
+      font-size: 0.9375rem;
+      border-bottom: 1px solid #f0f2f8;
+    }
+    .welcome__features li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #0062ff;
+      font-weight: 700;
+    }
+    .welcome__ibm-note {
+      font-size: 0.8125rem;
+      color: #5a5f7a;
+      background: #f4f6fb;
+      border-left: 3px solid #0062ff;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 28px;
+    }
+
+    /* ── Forms ────────────────────────────────────────────────────── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #2d3250;
+      margin-bottom: 6px;
+    }
+    .form-group label .required {
+      color: #da1e28;
+      margin-left: 3px;
+    }
+    .form-group .hint {
+      font-size: 0.8rem;
+      color: #697085;
+      margin-top: 4px;
+    }
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #c8cce0;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      color: #1b1f2e;
+      background: #fff;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #0062ff;
+      box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.1);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    select {
+      cursor: pointer;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      background: #0062ff;
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #0050d8; }
+    .btn-secondary {
+      background: #f0f2f8;
+      color: #1b1f2e;
+      border: 1.5px solid #c8cce0;
+    }
+    .btn-secondary:hover:not(:disabled) { background: #e4e8f4; }
+    .btn-danger {
+      background: #fff;
+      color: #da1e28;
+      border: 1.5px solid #da1e28;
+    }
+    .btn-danger:hover:not(:disabled) { background: #fff0f0; }
+    .btn-full { width: 100%; }
+
+    /* ── Interview screen ─────────────────────────────────────────── */
+    .interview-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .meta-badge {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #e8efff;
+      color: #0043ce;
+    }
+    .question-block {
+      background: #f7f9ff;
+      border: 1.5px solid #c4d2f9;
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+    }
+    .question-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0062ff;
+      margin-bottom: 10px;
+    }
+    .question-text {
+      font-size: 1.0625rem;
+      line-height: 1.6;
+      color: #1b1f2e;
+      font-weight: 500;
+    }
+    .turn-counter {
+      font-size: 0.8125rem;
+      color: #697085;
+      margin-bottom: 16px;
+    }
+    .answer-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #2d3250;
+      margin-bottom: 8px;
+    }
+    .answer-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Loading spinner ──────────────────────────────────────────── */
+    .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 32px 0;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #d0d6ea;
+      border-top-color: #0062ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-text {
+      font-size: 0.9375rem;
+      color: #5a5f7a;
+    }
+
+    /* ── Evaluation ───────────────────────────────────────────────── */
+    .scores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .score-card {
+      background: #f7f9ff;
+      border: 1px solid #d0d9f4;
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .score-card__label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #697085;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .score-card__value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #0062ff;
+      line-height: 1;
+    }
+    .score-card__value.high { color: #198038; }
+    .score-card__value.mid  { color: #f1a600; }
+    .score-card__value.low  { color: #da1e28; }
+    .score-card__max {
+      font-size: 0.75rem;
+      color: #9aa0bc;
+    }
+    .eval-section {
+      margin-bottom: 20px;
+    }
+    .eval-section__title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #2d3250;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-size: 0.8125rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .tag-strength { background: #d9f0dd; color: #198038; }
+    .tag-weakness { background: #fde3e3; color: #a2191f; }
+    .tag-improve  { background: #e8efff; color: #0043ce; }
+    .eval-text {
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      color: #3d4263;
+      background: #f7f9ff;
+      border-left: 3px solid #0062ff;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+    }
+
+    /* ── Summary / Report ─────────────────────────────────────────── */
+    .report-header {
+      text-align: center;
+      padding: 20px 0 28px;
+    }
+    .report-header__icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+    .report-header__title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1b1f2e;
+    }
+    .report-header__role {
+      font-size: 0.9375rem;
+      color: #5a5f7a;
+      margin-top: 4px;
+    }
+    .overall-score-big {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .overall-score-big__number {
+      font-size: 4rem;
+      font-weight: 800;
+      color: #0062ff;
+      line-height: 1;
+    }
+    .overall-score-big__number.high { color: #198038; }
+    .overall-score-big__number.mid  { color: #f1a600; }
+    .overall-score-big__number.low  { color: #da1e28; }
+    .overall-score-big__label {
+      font-size: 0.875rem;
+      color: #697085;
+      margin-top: 4px;
+    }
+    .turn-history {
+      margin-top: 8px;
+    }
+    .turn-item {
+      border: 1px solid #e4e8f4;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .turn-item__header {
+      background: #f0f2f8;
+      padding: 10px 16px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: #2d3250;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .turn-item__body {
+      padding: 16px;
+      display: none;
+    }
+    .turn-item__body.open { display: block; }
+    .turn-item__q {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: #1b1f2e;
+      margin-bottom: 6px;
+    }
+    .turn-item__a {
+      font-size: 0.9rem;
+      color: #5a5f7a;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .turn-item__score {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #0062ff;
+    }
+
+    /* ── Error / Alert ────────────────────────────────────────────── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .alert-error {
+      background: #fff0f0;
+      border: 1px solid #f4b4b4;
+      color: #a2191f;
+    }
+    .alert-info {
+      background: #e8efff;
+      border: 1px solid #b0c8ff;
+      color: #0043ce;
+    }
+    .alert__icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+    .alert__text { line-height: 1.5; }
+    .hidden { display: none !important; }
+
+    /* ── Bottom nav ───────────────────────────────────────────────── */
+    .bottom-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* ── Progress bar ─────────────────────────────────────────────── */
+    .progress-bar {
+      height: 4px;
+      background: #d0d6ea;
+      border-radius: 2px;
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+    .progress-bar__fill {
+      height: 100%;
+      background: #0062ff;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    /* ── Responsive ───────────────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .card { padding: 20px 16px; }
+      .scores-grid { grid-template-columns: 1fr 1fr; }
+      .header__title { font-size: 1.3rem; }
+      .overall-score-big__number { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header__logo">
+      <span class="header__ibm-dot"></span>
+      <span class="header__title">AI Interview Coach</span>
+    </div>
+    <p class="header__subtitle">Powered by IBM watsonx.ai &amp; IBM Granite</p>
+    <span class="header__tag">IBM SkillsBuild · Edunet · AICTE</span>
+  </header>
+
+  <!-- ░░░ SCREEN 1: WELCOME ░░░ -->
+  <section id="screen-welcome" class="screen active">
+    <div class="card">
+      <h2 class="card__title">Welcome</h2>
+      <p class="welcome__description">
+        AI Interview Coach is an intelligent interview preparation system
+        that uses IBM Granite foundation models via IBM watsonx.ai to
+        generate adaptive interview questions, evaluate your answers in
+        real time, and provide actionable feedback to help you grow.
+      </p>
+      <ul class="welcome__features">
+        <li>Adaptive questions driven by your answers and experience level</li>
+        <li>Multi-dimensional evaluation: technical, communication, clarity, and more</li>
+        <li>RAG-enhanced context — knowledge base grounded responses</li>
+        <li>Works for any job role you enter — no fixed role list</li>
+        <li>Personalized improvement recommendations after each answer</li>
+        <li>Full session summary and performance report at the end</li>
+      </ul>
+      <div class="welcome__ibm-note">
+        All AI generation and evaluation is performed by IBM Granite models
+        running on IBM watsonx.ai. No data leaves the IBM Cloud.
+      </div>
+      <button class="btn btn-primary btn-full" onclick="showSetup()">
+        Start Interview →
+      </button>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 2: SETUP ░░░ -->
+  <section id="screen-setup" class="screen">
+    <div class="card">
+      <h2 class="card__title">Interview Setup</h2>
+      <div id="setup-error" class="alert alert-error hidden">
+        <span class="alert__icon">⚠</span>
+        <span class="alert__text" id="setup-error-text"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="candidate-name">Your Name <span class="required">*</span></label>
+        <input type="text" id="candidate-name" placeholder="e.g. Priya Sharma" autocomplete="name" />
+      </div>
+
+      <div class="form-group">
+        <label for="job-role">Target Job Role <span class="required">*</span></label>
+        <input type="text" id="job-role"
+          placeholder="e.g. Data Scientist, Cloud Engineer, Product Manager, …"
+          autocomplete="off" />
+        <p class="hint">Enter any role — the system supports unlimited free-form roles.</p>
+      </div>
+
+      <div class="form-group">
+        <label for="experience-level">Experience Level <span class="required">*</span></label>
+        <select id="experience-level">
+          <option value="">— Select level —</option>
+          <option value="Fresher">Fresher / Entry Level</option>
+          <option value="Junior">Junior (1–2 years)</option>
+          <option value="Mid-level">Mid-level (3–5 years)</option>
+          <option value="Senior">Senior (6+ years)</option>
+          <option value="Lead">Lead / Principal</option>
+          <option value="Manager">Manager / Director</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="interview-type">Interview Type <span class="required">*</span></label>
+        <select id="interview-type">
+          <option value="">— Select type —</option>
+          <option value="technical">Technical</option>
+          <option value="behavioral">Behavioral</option>
+          <option value="HR">HR</option>
+          <option value="system design">System Design</option>
+          <option value="aptitude">Aptitude</option>
+          <option value="case study">Case Study</option>
+          <option value="mixed">Mixed</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="candidate-context">Resume / Background Context <span style="color:#697085;font-weight:400">(optional)</span></label>
+        <textarea id="candidate-context"
+          placeholder="Paste a brief summary of your skills, projects, or resume highlights. This helps the AI personalize questions for you."
+          rows="4"></textarea>
+        <p class="hint">Max 2000 characters. The AI uses this to tailor questions.</p>
+      </div>
+
+      <div class="bottom-nav">
+        <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">← Back</button>
+        <button class="btn btn-primary" onclick="startInterview()">Begin Interview →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 3: INTERVIEW ░░░ -->
+  <section id="screen-interview" class="screen">
+    <div class="card">
+      <h2 class="card__title">Interview in Progress</h2>
+
+      <!-- Meta badges -->
+      <div class="interview-meta">
+        <span class="meta-badge" id="meta-role">—</span>
+        <span class="meta-badge" id="meta-level">—</span>
+        <span class="meta-badge" id="meta-type">—</span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-bar">
+        <div class="progress-bar__fill" id="interview-progress" style="width:0%"></div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="interview-loading" class="spinner-wrap hidden">
+        <div class="spinner"></div>
+        <p class="spinner-text" id="loading-text">IBM Granite is thinking…</p>
+      </div>
+
+      <!-- Question + answer area -->
+      <div id="interview-content">
+        <p class="turn-counter" id="turn-counter">Question 1</p>
+
+        <div class="question-block">
+          <p class="question-label">Interview Question</p>
+          <p class="question-text" id="question-display">Loading…</p>
+        </div>
+
+        <div id="answer-area">
+          <p class="answer-label">Your Answer</p>
+          <textarea id="answer-input"
+            placeholder="Type your answer here. Take your time — think through the question carefully."
+            rows="6"></textarea>
+          <div id="answer-error" class="alert alert-error hidden">
+            <span class="alert__icon">⚠</span>
+            <span class="alert__text">Please enter an answer before submitting.</span>
+          </div>
+          <div class="answer-actions">
+            <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">
+              Submit Answer
+            </button>
+            <button class="btn btn-danger" onclick="endInterview()">
+              End &amp; Get Report
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-turn evaluation (shown after each submit) -->
+      <div id="turn-eval" class="hidden">
+        <div class="scores-grid" id="turn-scores"></div>
+        <div class="eval-section">
+          <p class="eval-section__title">Strengths</p>
+          <div class="tag-list" id="turn-strengths"></div>
+        </div>
+        <div class="eval-section">
+          <p class="eval-section__title">Areas to Improve</p>
+          <div class="tag-list" id="turn-weaknesses"></div>
+        </div>
+        <div class="eval-section">
+          <p class="eval-section__title">Feedback</p>
+          <p class="eval-text" id="turn-feedback"></p>
+        </div>
+        <div class="eval-section" id="turn-suggestions-section">
+          <p class="eval-section__title">Improvement Suggestions</p>
+          <div class="tag-list" id="turn-suggestions"></div>
+        </div>
+        <div class="bottom-nav">
+          <button class="btn btn-secondary" onclick="endInterview()">End &amp; Get Report</button>
+          <button class="btn btn-primary" onclick="nextQuestion()">Next Question →</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 4: REPORT ░░░ -->
+  <section id="screen-report" class="screen">
+    <div class="card">
+      <div class="report-header">
+        <div class="report-header__icon">🎓</div>
+        <h2 class="report-header__title">Interview Complete</h2>
+        <p class="report-header__role" id="report-role-line">—</p>
+      </div>
+
+      <div id="report-loading" class="spinner-wrap hidden">
+        <div class="spinner"></div>
+        <p class="spinner-text">Generating your report…</p>
+      </div>
+
+      <div id="report-content">
+        <div class="overall-score-big">
+          <div class="overall-score-big__number" id="report-overall-score">—</div>
+          <div class="overall-score-big__label">Overall Score / 10</div>
+        </div>
+
+        <div class="scores-grid" id="report-scores"></div>
+
+        <div class="eval-section">
+          <p class="eval-section__title">Strengths</p>
+          <div class="tag-list" id="report-strengths"></div>
+        </div>
+        <div class="eval-section">
+          <p class="eval-section__title">Areas for Improvement</p>
+          <div class="tag-list" id="report-weaknesses"></div>
+        </div>
+        <div class="eval-section" id="report-improvements-section">
+          <p class="eval-section__title">Recommended Improvements</p>
+          <div class="tag-list" id="report-improvements"></div>
+        </div>
+
+        <div class="eval-section">
+          <p class="eval-section__title">Turn-by-Turn Review</p>
+          <div class="turn-history" id="turn-history"></div>
+        </div>
+
+        <div class="bottom-nav">
+          <button class="btn btn-secondary" onclick="resetAll()">Start New Interview</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 5: ERROR ░░░ -->
+  <section id="screen-error" class="screen">
+    <div class="card">
+      <h2 class="card__title">Something went wrong</h2>
+      <div class="alert alert-error">
+        <span class="alert__icon">⚠</span>
+        <span class="alert__text" id="error-message">An unexpected error occurred.</span>
+      </div>
+      <p style="color:#5a5f7a;font-size:0.9rem;margin-bottom:24px">
+        The IBM watsonx.ai service may be temporarily unavailable, or there
+        may be a connectivity issue. Please try again.
+      </p>
+      <div class="bottom-nav">
+        <button class="btn btn-secondary" onclick="showScreen('screen-interview')">← Retry</button>
+        <button class="btn btn-primary" onclick="resetAll()">Start Over</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /shell -->
+
+<script>
+/* ── State ─────────────────────────────────────────────────────────── */
+const state = {
+  sessionId: null,
+  candidateName: "",
+  role: "",
+  experienceLevel: "",
+  interviewType: "",
+  candidateContext: "",
+  currentQuestion: "",
+  turnNumber: 0,
+  maxTurns: 10,
+  turns: [],          // {question, answer, evaluation}
+};
+
+/* ── Screen navigation ──────────────────────────────────────────────── */
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showSetup() {
+  showScreen("screen-setup");
+}
+
+/* ── Setup → start interview ────────────────────────────────────────── */
+async function startInterview() {
+  const name      = document.getElementById("candidate-name").value.trim();
+  const role      = document.getElementById("job-role").value.trim();
+  const level     = document.getElementById("experience-level").value;
+  const type      = document.getElementById("interview-type").value;
+  const context   = document.getElementById("candidate-context").value.trim();
+
+  document.getElementById("setup-error").classList.add("hidden");
+
+  if (!name) { return showSetupError("Please enter your name."); }
+  if (!role || role.length < 2) { return showSetupError("Please enter a target job role (at least 2 characters)."); }
+  if (!level) { return showSetupError("Please select your experience level."); }
+  if (!type)  { return showSetupError("Please select an interview type."); }
+  if (context.length > 2000) { return showSetupError("Background context must be under 2000 characters."); }
+
+  state.candidateName    = name;
+  state.role             = role;
+  state.experienceLevel  = level;
+  state.interviewType    = type;
+  state.candidateContext = context;
+  state.sessionId        = null;
+  state.turnNumber       = 0;
+  state.turns            = [];
+
+  // Update meta badges
+  document.getElementById("meta-role").textContent  = role;
+  document.getElementById("meta-level").textContent = level;
+  document.getElementById("meta-type").textContent  = type;
+
+  showScreen("screen-interview");
+  setInterviewLoading(true, "Creating your session on IBM watsonx.ai…");
+
+  try {
+    const resp = await fetch("/interview/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        candidate_name:   name,
+        role:             role,
+        experience_level: level,
+        interview_type:   type,
+        candidate_context: context || null,
+      }),
+    });
+
+    if (!resp.ok) {
+      const detail = await safeDetail(resp);
+      return showInterviewError("Failed to start session: " + detail);
+    }
+
+    const data = await resp.json();
+    state.sessionId      = data.session_id;
+    state.currentQuestion = data.first_question;
+    state.turnNumber      = 1;
+    updateProgress();
+
+    document.getElementById("question-display").textContent = data.first_question;
+    document.getElementById("turn-counter").textContent = "Question 1";
+    document.getElementById("answer-input").value = "";
+    document.getElementById("answer-error").classList.add("hidden");
+    document.getElementById("turn-eval").classList.add("hidden");
+    document.getElementById("answer-area").classList.remove("hidden");
+
+  } catch (err) {
+    showInterviewError("Network error: " + err.message);
+  } finally {
+    setInterviewLoading(false);
+  }
+}
+
+function showSetupError(msg) {
+  document.getElementById("setup-error-text").textContent = msg;
+  document.getElementById("setup-error").classList.remove("hidden");
+}
+
+/* ── Display a question already received from the server ────────────── */
+function displayQuestion(question) {
+  state.currentQuestion = question;
+  updateProgress();
+  document.getElementById("question-display").textContent = question;
+  document.getElementById("turn-counter").textContent = `Question ${state.turnNumber}`;
+  document.getElementById("answer-input").value = "";
+  document.getElementById("answer-error").classList.add("hidden");
+  document.getElementById("turn-eval").classList.add("hidden");
+  document.getElementById("answer-area").classList.remove("hidden");
+}
+
+/* ── Submit answer ──────────────────────────────────────────────────── */
+async function submitAnswer() {
+  const answer = document.getElementById("answer-input").value.trim();
+  const errEl  = document.getElementById("answer-error");
+
+  if (!answer) {
+    errEl.classList.remove("hidden");
+    document.getElementById("answer-input").focus();
+    return;
+  }
+  errEl.classList.add("hidden");
+
+  setInterviewLoading(true, "IBM Granite is evaluating your answer…");
+  document.getElementById("answer-area").classList.add("hidden");
+
+  try {
+    const resp = await fetch(`/interview/session/${state.sessionId}/answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question:          state.currentQuestion,
+        answer:            answer,
+        candidate_context: state.candidateContext || null,
+      }),
+    });
+
+    if (!resp.ok) {
+      const detail = await safeDetail(resp);
+      document.getElementById("answer-area").classList.remove("hidden");
+      return showInterviewError("Evaluation failed: " + detail);
+    }
+
+    const data = await resp.json();
+    const evaluation = data.evaluation;
+
+    state.turns.push({
+      question: state.currentQuestion,
+      answer: answer,
+      evaluation: evaluation,
+    });
+
+    // Store next question now; will be displayed when user clicks Next
+    state._pendingNextQuestion = data.next_question || null;
+    state._interviewComplete   = data.interview_complete || false;
+
+    renderTurnEvaluation(evaluation);
+
+  } catch (err) {
+    document.getElementById("answer-area").classList.remove("hidden");
+    showInterviewError("Network error: " + err.message);
+  } finally {
+    setInterviewLoading(false);
+  }
+}
+
+/* ── Render per-turn evaluation ─────────────────────────────────────── */
+function renderTurnEvaluation(ev) {
+  // Scores
+  const scoreMap = {
+    "Overall":       ev.overall_score,
+    "Technical":     ev.technical_score,
+    "Relevance":     ev.relevance_score,
+    "Clarity":       ev.clarity_score,
+    "Communication": ev.communication_score,
+    "Completeness":  ev.completeness_score,
+  };
+
+  const scoresEl = document.getElementById("turn-scores");
+  scoresEl.innerHTML = "";
+  for (const [label, val] of Object.entries(scoreMap)) {
+    if (val !== undefined && val !== null) {
+      scoresEl.appendChild(makeScoreCard(label, val));
+    }
+  }
+
+  // Strengths
+  const strEl = document.getElementById("turn-strengths");
+  strEl.innerHTML = "";
+  (ev.strengths || []).forEach(s => {
+    strEl.appendChild(makeTag(s, "tag-strength"));
+  });
+  if (!strEl.children.length) strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  // Weaknesses
+  const weakEl = document.getElementById("turn-weaknesses");
+  weakEl.innerHTML = "";
+  (ev.weaknesses || []).forEach(w => {
+    weakEl.appendChild(makeTag(w, "tag-weakness"));
+  });
+  if (!weakEl.children.length) weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  // Feedback / evaluation text
+  const fb = ev.evaluation || ev.feedback || "";
+  document.getElementById("turn-feedback").textContent = fb || "No feedback provided.";
+
+  // Improvement suggestions
+  const sugEl = document.getElementById("turn-suggestions");
+  sugEl.innerHTML = "";
+  const suggestions = ev.improvement_suggestions || ev.improvement_plan || [];
+  suggestions.forEach(s => sugEl.appendChild(makeTag(s, "tag-improve")));
+  document.getElementById("turn-suggestions-section").style.display =
+    suggestions.length ? "" : "none";
+
+  document.getElementById("turn-eval").classList.remove("hidden");
+}
+
+/* ── Next question ──────────────────────────────────────────────────── */
+function nextQuestion() {
+  if (state._interviewComplete || state.turnNumber >= state.maxTurns) {
+    endInterview();
+    return;
+  }
+  const next = state._pendingNextQuestion;
+  if (!next) {
+    endInterview();
+    return;
+  }
+  state.turnNumber += 1;
+  state._pendingNextQuestion = null;
+  document.getElementById("turn-eval").classList.add("hidden");
+  displayQuestion(next);
+}
+
+/* ── End interview → report ─────────────────────────────────────────── */
+function endInterview() {
+  if (state.turns.length === 0) {
+    resetAll();
+    return;
+  }
+  showScreen("screen-report");
+  buildReport();
+}
+
+function buildReport() {
+  // Overall average
+  const overall = avg(state.turns.map(t => t.evaluation.overall_score));
+  const overallEl = document.getElementById("report-overall-score");
+  overallEl.textContent = overall.toFixed(1);
+  overallEl.className = "overall-score-big__number " + scoreClass(overall);
+
+  // Role line
+  document.getElementById("report-role-line").textContent =
+    `${state.candidateName} · ${state.role} · ${state.experienceLevel}`;
+
+  // Dimension averages
+  const dims = {
+    "Technical":     avg(state.turns.map(t => t.evaluation.technical_score)),
+    "Relevance":     avg(state.turns.map(t => t.evaluation.relevance_score)),
+    "Clarity":       avg(state.turns.map(t => t.evaluation.clarity_score)),
+    "Communication": avg(state.turns.map(t => t.evaluation.communication_score)),
+    "Completeness":  avg(state.turns.map(t => t.evaluation.completeness_score)),
+  };
+  const scoresEl = document.getElementById("report-scores");
+  scoresEl.innerHTML = "";
+  for (const [label, val] of Object.entries(dims)) {
+    if (!isNaN(val)) scoresEl.appendChild(makeScoreCard(label, val));
+  }
+
+  // Aggregate strengths / weaknesses / suggestions
+  const allStrengths   = flatten(state.turns.map(t => t.evaluation.strengths || []));
+  const allWeaknesses  = flatten(state.turns.map(t => t.evaluation.weaknesses || []));
+  const allSuggestions = flatten(state.turns.map(t =>
+    t.evaluation.improvement_suggestions || t.evaluation.improvement_plan || []
+  ));
+
+  const strEl = document.getElementById("report-strengths");
+  strEl.innerHTML = "";
+  dedup(allStrengths).forEach(s => strEl.appendChild(makeTag(s, "tag-strength")));
+  if (!strEl.children.length) strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  const weakEl = document.getElementById("report-weaknesses");
+  weakEl.innerHTML = "";
+  dedup(allWeaknesses).forEach(w => weakEl.appendChild(makeTag(w, "tag-weakness")));
+  if (!weakEl.children.length) weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  const impEl = document.getElementById("report-improvements");
+  impEl.innerHTML = "";
+  dedup(allSuggestions).forEach(s => impEl.appendChild(makeTag(s, "tag-improve")));
+  document.getElementById("report-improvements-section").style.display =
+    allSuggestions.length ? "" : "none";
+
+  // Turn history
+  const histEl = document.getElementById("turn-history");
+  histEl.innerHTML = "";
+  state.turns.forEach((turn, i) => {
+    const item = document.createElement("div");
+    item.className = "turn-item";
+    const score = turn.evaluation.overall_score;
+    item.innerHTML = `
+      <div class="turn-item__header" onclick="toggleTurn(this)">
+        <span>Q${i + 1} · ${turn.question.slice(0, 60)}${turn.question.length > 60 ? "…" : ""}</span>
+        <span style="color:${scoreColor(score)}">Score: ${score}/10</span>
+      </div>
+      <div class="turn-item__body">
+        <p class="turn-item__q">${escHtml(turn.question)}</p>
+        <p class="turn-item__a">"${escHtml(turn.answer.slice(0, 200))}${turn.answer.length > 200 ? "…" : ""}"</p>
+        <p class="turn-item__score">Score: ${score}/10</p>
+      </div>
+    `;
+    histEl.appendChild(item);
+  });
+}
+
+function toggleTurn(headerEl) {
+  const body = headerEl.nextElementSibling;
+  body.classList.toggle("open");
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────── */
+function resetAll() {
+  state.sessionId = null;
+  state.candidateName = "";
+  state.role = "";
+  state.experienceLevel = "";
+  state.interviewType = "";
+  state.candidateContext = "";
+  state.currentQuestion = "";
+  state.turnNumber = 0;
+  state.turns = [];
+  state._pendingNextQuestion = null;
+  state._interviewComplete = false;
+
+  document.getElementById("candidate-name").value = "";
+  document.getElementById("job-role").value = "";
+  document.getElementById("experience-level").value = "";
+  document.getElementById("interview-type").value = "";
+  document.getElementById("candidate-context").value = "";
+
+  showScreen("screen-welcome");
+}
+
+/* ── UI helpers ─────────────────────────────────────────────────────── */
+function setInterviewLoading(on, text = "IBM Granite is thinking…") {
+  document.getElementById("interview-loading").classList.toggle("hidden", !on);
+  document.getElementById("interview-content").style.opacity = on ? "0.4" : "1";
+  document.getElementById("interview-content").style.pointerEvents = on ? "none" : "";
+  if (on) document.getElementById("loading-text").textContent = text;
+}
+
+function showInterviewError(msg) {
+  document.getElementById("error-message").textContent = msg;
+  showScreen("screen-error");
+}
+
+function updateProgress() {
+  const pct = Math.min((state.turnNumber / state.maxTurns) * 100, 100);
+  document.getElementById("interview-progress").style.width = pct + "%";
+}
+
+function makeScoreCard(label, val) {
+  const card = document.createElement("div");
+  card.className = "score-card";
+  const num = typeof val === "number" ? val : parseFloat(val) || 0;
+  card.innerHTML = `
+    <div class="score-card__label">${escHtml(label)}</div>
+    <div class="score-card__value ${scoreClass(num)}">${num % 1 === 0 ? num : num.toFixed(1)}</div>
+    <div class="score-card__max">/ 10</div>
+  `;
+  return card;
+}
+
+function makeTag(text, cls) {
+  const t = document.createElement("span");
+  t.className = "tag " + cls;
+  t.textContent = text;
+  return t;
+}
+
+function scoreClass(v) {
+  if (v >= 7) return "high";
+  if (v >= 4) return "mid";
+  return "low";
+}
+
+function scoreColor(v) {
+  if (v >= 7) return "#198038";
+  if (v >= 4) return "#f1a600";
+  return "#da1e28";
+}
+
+function avg(arr) {
+  const valid = arr.filter(v => v !== undefined && v !== null && !isNaN(v));
+  if (!valid.length) return 0;
+  return valid.reduce((a, b) => a + b, 0) / valid.length;
+}
+
+function flatten(arrs) {
+  return arrs.reduce((acc, a) => acc.concat(a), []);
+}
+
+function dedup(arr) {
+  const seen = new Set();
+  return arr.filter(x => {
+    const k = x.toLowerCase().trim();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+async function safeDetail(resp) {
+  try {
+    const j = await resp.json();
+    return j.detail || resp.statusText;
+  } catch {
+    return resp.statusText;
+  }
+}
+</script>
+</body>
+</html>

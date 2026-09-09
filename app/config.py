@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -19,6 +20,7 @@ class Settings:
     model_id: str
     rag_documents_dir: str
     rag_vector_dir: str
+    api_key: Optional[str]  # Optional: protect API with a bearer token
 
     @property
     def watsonx_url(self) -> str:
@@ -58,4 +60,7 @@ def get_settings() -> Settings:
             "RAG_VECTOR_DIR",
             "data/vector_store",
         ).strip(),
+        # Optional: set API_KEY in .env to require bearer auth on all endpoints.
+        # Leave unset (or empty) to disable authentication.
+        api_key=os.getenv("API_KEY", "").strip() or None,
     )

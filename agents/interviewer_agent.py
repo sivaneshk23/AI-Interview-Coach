@@ -14,11 +14,11 @@ class InterviewerAgent:
     """
 
     def __init__(
-    self,
-    role: str = "General",
-    interview_type: str = "technical",
-    difficulty: str = "medium",
-):
+        self,
+        role: str = "General",
+        interview_type: str = "technical",
+        difficulty: str = "medium",
+    ):
         self.role = role
         self.interview_type = interview_type
         self.difficulty = difficulty

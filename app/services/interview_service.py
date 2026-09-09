@@ -5,10 +5,7 @@ Delegates question generation to InterviewEngine so the live API
 uses InterviewerAgent with RAG context.
 """
 
-from app.interview_engine import InterviewEngine
-
-# Module-level engine so the RAG index is loaded once per process.
-_engine = InterviewEngine()
+from app.engine_provider import get_engine
 
 
 class InterviewService:
@@ -28,14 +25,15 @@ class InterviewService:
         injected from the knowledge base.
         """
 
-        session = _engine.create_session(
+        engine = get_engine()
+        session = engine.create_session(
             candidate_name="candidate",
             role=role,
             experience_level=experience_level,
             interview_type=interview_type,
         )
 
-        question = _engine.get_next_question(
+        question = engine.get_next_question(
             session=session,
             candidate_context=candidate_context,
         )
