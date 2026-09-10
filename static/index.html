@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0062ff" />
   <title>AI Interview Coach — IBM watsonx.ai</title>
   <style>
     /* ── Reset & Base ─────────────────────────────────────────────── */
@@ -142,6 +143,14 @@
       color: #697085;
       margin-top: 4px;
     }
+    .char-counter {
+      font-size: 0.75rem;
+      color: #697085;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .char-counter.warn { color: #f1a600; }
+    .char-counter.over { color: #da1e28; font-weight: 600; }
     input[type="text"],
     select,
     textarea {
@@ -221,6 +230,10 @@
       background: #e8efff;
       color: #0043ce;
     }
+    .meta-badge--round {
+      background: #d9f0e8;
+      color: #198038;
+    }
     .question-block {
       background: #f7f9ff;
       border: 1.5px solid #c4d2f9;
@@ -258,6 +271,34 @@
       gap: 12px;
       margin-top: 16px;
       flex-wrap: wrap;
+    }
+
+    /* ── Inline error banner (replaces screen navigation for recoverable errors) */
+    .error-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: #fff0f0;
+      border: 1px solid #f4b4b4;
+      color: #a2191f;
+    }
+    .error-banner__icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+    .error-banner__text { line-height: 1.5; flex: 1; }
+    .error-banner__retry {
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #a2191f;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
     }
 
     /* ── Loading spinner ──────────────────────────────────────────── */
@@ -408,6 +449,7 @@
       justify-content: space-between;
       user-select: none;
     }
+    .turn-item__header:hover { background: #e8ecf6; }
     .turn-item__body {
       padding: 16px;
       display: none;
@@ -429,6 +471,17 @@
       font-size: 0.875rem;
       font-weight: 700;
       color: #0062ff;
+      margin-bottom: 8px;
+    }
+    .turn-item__feedback {
+      font-size: 0.875rem;
+      line-height: 1.55;
+      color: #3d4263;
+      background: #f7f9ff;
+      border-left: 3px solid #c4d2f9;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin-top: 6px;
     }
 
     /* ── Error / Alert ────────────────────────────────────────────── */
@@ -454,6 +507,278 @@
     .alert__icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
     .alert__text { line-height: 1.5; }
     .hidden { display: none !important; }
+
+    /* ── Auth nav strip ───────────────────────────────────────────── */
+    .auth-nav {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0 0;
+      font-size: 0.8125rem;
+      color: #5a5f7a;
+      flex-wrap: wrap;
+    }
+    .auth-nav__email {
+      font-weight: 600;
+      color: #2d3250;
+    }
+    .auth-nav__link {
+      background: none;
+      border: none;
+      color: #0062ff;
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-family: inherit;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .auth-nav__link:hover { color: #0050d8; }
+
+    /* ── MCQ Options ──────────────────────────────────────────────────── */
+    .mcq-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .mcq-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 1.5px solid #c8cce0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 0.9375rem;
+      background: #fff;
+      text-align: left;
+      font-family: inherit;
+      width: 100%;
+      color: #1b1f2e;
+    }
+    .mcq-option:hover:not(:disabled) { border-color: #0062ff; background: #f0f5ff; }
+    .mcq-option.selected  { border-color: #0062ff; background: #e8efff; font-weight: 600; }
+    .mcq-option.correct   { border-color: #198038; background: #d9f0dd; }
+    .mcq-option.incorrect { border-color: #da1e28; background: #fff0f0; }
+    .mcq-option:disabled  { cursor: not-allowed; opacity: 0.8; }
+    .mcq-letter {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #e8efff; color: #0043ce; font-weight: 700;
+      font-size: 0.875rem; flex-shrink: 0;
+    }
+    .mcq-option.selected .mcq-letter  { background: #0062ff; color: #fff; }
+    .mcq-option.correct .mcq-letter   { background: #198038; color: #fff; }
+    .mcq-option.incorrect .mcq-letter { background: #da1e28; color: #fff; }
+    .mcq-feedback-bar { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 12px; font-weight: 600; }
+    .mcq-feedback-bar.correct-bar   { background: #d9f0dd; color: #198038; }
+    .mcq-feedback-bar.incorrect-bar { background: #fff0f0; color: #a2191f; }
+    .mcq-explanation {
+      font-size: 0.875rem; line-height: 1.55; color: #3d4263;
+      background: #f7f9ff; border-left: 3px solid #c4d2f9;
+      padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 16px;
+    }
+
+    /* ── Voice input ──────────────────────────────────────────────── */
+    .voice-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-mic {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1.5px solid #c8cce0;
+      background: #fff;
+      color: #2d3250;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-mic:hover:not(:disabled) { background: #f0f2f8; border-color: #0062ff; }
+    .btn-mic.recording {
+      background: #fff0f0;
+      border-color: #da1e28;
+      color: #a2191f;
+      animation: pulse-border 1s ease-in-out infinite;
+    }
+    .btn-mic:disabled { opacity: 0.5; cursor: not-allowed; }
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(218,30,40,0.25); }
+      50%       { box-shadow: 0 0 0 5px rgba(218,30,40,0); }
+    }
+    .voice-status {
+      font-size: 0.8125rem;
+      color: #697085;
+    }
+    .voice-status.active { color: #a2191f; font-weight: 600; }
+    .voice-transcript {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #3d4263;
+      background: #f7f9ff;
+      border: 1px solid #d0d9f4;
+      border-radius: 8px;
+      padding: 10px 14px;
+      min-height: 48px;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+    .voice-transcript:empty::before {
+      content: "Your spoken answer will appear here…";
+      color: #9aa0bc;
+    }
+    .voice-fallback-note {
+      font-size: 0.8rem;
+      color: #697085;
+      margin-bottom: 10px;
+    }
+
+    /* ── Round timer ──────────────────────────────────────────────── */
+    .round-timer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #697085;
+      margin-bottom: 10px;
+    }
+    .round-timer__icon { font-size: 0.875rem; }
+    .round-timer__time { font-variant-numeric: tabular-nums; }
+    .round-timer.warn  { color: #f1a600; }
+    .round-timer.danger { color: #da1e28; }
+
+    /* ── GD discussion ────────────────────────────────────────────── */
+    .gd-topic {
+      background: #e8efff;
+      border: 1.5px solid #b0c8ff;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+    }
+    .gd-topic__label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0043ce;
+      margin-bottom: 6px;
+    }
+    .gd-topic__text {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #1b1f2e;
+      line-height: 1.5;
+    }
+    .gd-thread {
+      border: 1px solid #e4e8f4;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 18px;
+      background: #fafbff;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .gd-turn {
+      margin-bottom: 12px;
+    }
+    .gd-turn__header {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .gd-turn--moderator .gd-turn__header { color: #697085; }
+    .gd-turn--ai       .gd-turn__header { color: #7c5cd8; }
+    .gd-turn--candidate .gd-turn__header { color: #198038; }
+    .gd-turn__text {
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #1b1f2e;
+      background: #fff;
+      border-left: 3px solid #d0d6ea;
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+    }
+    .gd-turn--moderator .gd-turn__text { border-left-color: #c8cce0; }
+    .gd-turn--ai        .gd-turn__text { border-left-color: #7c5cd8; background: #f7f4ff; }
+    .gd-turn--candidate .gd-turn__text { border-left-color: #198038; background: #f4fbf6; }
+
+    /* ── Password input wrapper ───────────────────────────────────── */
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 44px; }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #697085;
+      padding: 4px;
+      line-height: 1;
+    }
+    .password-toggle:hover { color: #2d3250; }
+
+    /* ── File upload zone ─────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed #c8cce0;
+      border-radius: 10px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      margin-bottom: 16px;
+      background: #fafbff;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #0062ff;
+      background: #f0f5ff;
+    }
+    .upload-zone__icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-zone__text { font-size: 0.9375rem; font-weight: 600; color: #2d3250; }
+    .upload-zone__hint { font-size: 0.8rem; color: #697085; margin-top: 4px; }
+    .upload-zone__file-info {
+      font-size: 0.875rem;
+      color: #198038;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    /* ── Profile preview ──────────────────────────────────────────── */
+    .profile-preview {
+      background: #f7f9ff;
+      border: 1px solid #d0d9f4;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+    .profile-preview__label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #0062ff;
+      margin-bottom: 4px;
+    }
+    .profile-preview__value {
+      font-size: 0.9375rem;
+      color: #1b1f2e;
+    }
+    .profile-preview__empty { color: #9aa0bc; font-style: italic; }
 
     /* ── Bottom nav ───────────────────────────────────────────────── */
     .bottom-nav {
@@ -486,6 +811,8 @@
       .scores-grid { grid-template-columns: 1fr 1fr; }
       .header__title { font-size: 1.3rem; }
       .overall-score-big__number { font-size: 3rem; }
+      .answer-actions { flex-direction: column; }
+      .answer-actions .btn { width: 100%; }
     }
   </style>
 </head>
@@ -494,6 +821,20 @@
 
   <!-- Header -->
   <header class="header">
+    <div class="auth-nav" id="auth-nav">
+      <span id="auth-nav-anon">
+        <button class="auth-nav__link" onclick="showScreen('screen-login')">Sign In</button>
+        &nbsp;·&nbsp;
+        <button class="auth-nav__link" onclick="showScreen('screen-register')">Register</button>
+      </span>
+      <span id="auth-nav-user" class="hidden">
+        <span class="auth-nav__email" id="auth-nav-email"></span>
+        &nbsp;·&nbsp;
+        <button class="auth-nav__link" onclick="showScreen('screen-profile')">Profile</button>
+        &nbsp;·&nbsp;
+        <button class="auth-nav__link" onclick="authLogout()">Sign Out</button>
+      </span>
+    </div>
     <div class="header__logo">
       <span class="header__ibm-dot"></span>
       <span class="header__title">AI Interview Coach</span>
@@ -527,6 +868,10 @@
       <button class="btn btn-primary btn-full" onclick="showSetup()">
         Start Interview →
       </button>
+      <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:#5a5f7a">
+        <button class="auth-nav__link" onclick="showScreen('screen-login')">Sign in</button>
+        to unlock profile auto-fill and session history.
+      </p>
     </div>
   </section>
 
@@ -538,17 +883,31 @@
         <span class="alert__icon">⚠</span>
         <span class="alert__text" id="setup-error-text"></span>
       </div>
+      <!-- Auth prompt for unauthenticated users -->
+      <div id="setup-auth-prompt" class="alert alert-info hidden" style="margin-bottom:16px">
+        <span class="alert__icon">ℹ</span>
+        <span class="alert__text">
+          <strong>Sign in</strong> to auto-fill from your profile and save your session history.
+          <button class="auth-nav__link" onclick="showLoginThenSetup()" style="margin-left:8px">Sign In / Register →</button>
+        </span>
+      </div>
+      <!-- Profile context banner for authenticated users with confirmed profile -->
+      <div id="setup-profile-banner" class="alert alert-info hidden" style="margin-bottom:16px">
+        <span class="alert__icon">✓</span>
+        <span class="alert__text" id="setup-profile-banner-text">Your confirmed profile will be used for this interview.</span>
+      </div>
 
       <div class="form-group">
         <label for="candidate-name">Your Name <span class="required">*</span></label>
-        <input type="text" id="candidate-name" placeholder="e.g. Priya Sharma" autocomplete="name" />
+        <input type="text" id="candidate-name" placeholder="e.g. Priya Sharma"
+          autocomplete="name" maxlength="200" />
       </div>
 
       <div class="form-group">
         <label for="job-role">Target Job Role <span class="required">*</span></label>
         <input type="text" id="job-role"
           placeholder="e.g. Data Scientist, Cloud Engineer, Product Manager, …"
-          autocomplete="off" />
+          autocomplete="off" maxlength="200" />
         <p class="hint">Enter any role — the system supports unlimited free-form roles.</p>
       </div>
 
@@ -583,13 +942,14 @@
         <label for="candidate-context">Resume / Background Context <span style="color:#697085;font-weight:400">(optional)</span></label>
         <textarea id="candidate-context"
           placeholder="Paste a brief summary of your skills, projects, or resume highlights. This helps the AI personalize questions for you."
-          rows="4"></textarea>
-        <p class="hint">Max 2000 characters. The AI uses this to tailor questions.</p>
+          rows="4" maxlength="2000"
+          oninput="updateCharCounter('candidate-context', 'context-counter', 2000)"></textarea>
+        <div class="char-counter" id="context-counter">0 / 2000</div>
       </div>
 
       <div class="bottom-nav">
         <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">← Back</button>
-        <button class="btn btn-primary" onclick="startInterview()">Begin Interview →</button>
+        <button class="btn btn-primary" id="begin-btn" onclick="startInterview()">Begin Interview →</button>
       </div>
     </div>
   </section>
@@ -604,42 +964,98 @@
         <span class="meta-badge" id="meta-role">—</span>
         <span class="meta-badge" id="meta-level">—</span>
         <span class="meta-badge" id="meta-type">—</span>
+        <span class="meta-badge meta-badge--round hidden" id="meta-round">Round 1</span>
       </div>
 
       <!-- Progress bar -->
-      <div class="progress-bar">
+      <div class="progress-bar" role="progressbar" aria-label="Interview progress"
+           aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progress-bar-wrap">
         <div class="progress-bar__fill" id="interview-progress" style="width:0%"></div>
       </div>
 
+      <!-- Inline error banner for recoverable errors -->
+      <div id="interview-error-banner" class="error-banner hidden">
+        <span class="error-banner__icon">⚠</span>
+        <span class="error-banner__text" id="interview-error-text"></span>
+        <button class="error-banner__retry" onclick="dismissInterviewError()">Dismiss</button>
+      </div>
+
       <!-- Loading state -->
-      <div id="interview-loading" class="spinner-wrap hidden">
-        <div class="spinner"></div>
+      <div id="interview-loading" class="spinner-wrap hidden" aria-live="polite" aria-atomic="true">
+        <div class="spinner" role="status"></div>
         <p class="spinner-text" id="loading-text">IBM Granite is thinking…</p>
       </div>
 
       <!-- Question + answer area -->
       <div id="interview-content">
-        <p class="turn-counter" id="turn-counter">Question 1</p>
+        <p class="turn-counter" id="turn-counter" aria-live="polite">Question 1</p>
 
-        <div class="question-block">
-          <p class="question-label">Interview Question</p>
-          <p class="question-text" id="question-display">Loading…</p>
+        <!-- Round timer (shown when time_limit_minutes is set) -->
+        <div id="round-timer-wrap" class="round-timer hidden" aria-live="polite">
+          <span class="round-timer__icon">⏱</span>
+          <span class="round-timer__time" id="round-timer-display">--:--</span>
+          <span id="round-timer-label" style="font-weight:400;color:inherit"></span>
+        </div>
+
+        <div class="question-block" id="question-block">
+          <p class="question-label" id="question-label-text">Interview Question</p>
+          <p class="question-text" id="question-display" aria-live="polite"></p>
+        </div>
+
+        <!-- GD discussion thread (shown only for GD rounds) -->
+        <div id="gd-area" class="hidden">
+          <div class="gd-topic hidden" id="gd-topic-block">
+            <div class="gd-topic__label">Discussion Topic</div>
+            <div class="gd-topic__text" id="gd-topic-text"></div>
+          </div>
+          <div class="gd-thread" id="gd-thread" aria-live="polite" aria-label="Group Discussion thread"></div>
         </div>
 
         <div id="answer-area">
-          <p class="answer-label">Your Answer</p>
-          <textarea id="answer-input"
-            placeholder="Type your answer here. Take your time — think through the question carefully."
-            rows="6"></textarea>
+          <!-- MCQ option buttons (shown for aptitude rounds) -->
+          <div id="mcq-area" class="hidden">
+            <p class="answer-label">Select Your Answer</p>
+            <div class="mcq-options" id="mcq-options-list"></div>
+            <div id="mcq-instant-feedback" class="hidden">
+              <div id="mcq-feedback-bar" class="mcq-feedback-bar"></div>
+              <p id="mcq-explanation" class="mcq-explanation hidden"></p>
+            </div>
+          </div>
+          <!-- Free-text area (for non-MCQ rounds) -->
+          <div id="freetext-area">
+            <p class="answer-label" id="freetext-label">Your Answer</p>
+            <!-- Voice input controls (shown when speech recognition is available) -->
+            <div id="voice-controls" class="voice-controls hidden">
+              <button type="button" class="btn-mic" id="mic-btn" onclick="toggleVoiceRecording()"
+                      aria-label="Start voice recording" title="Record your answer by voice">
+                <span id="mic-icon">🎙</span>
+                <span id="mic-label">Record Answer</span>
+              </button>
+              <span class="voice-status" id="voice-status">Click to speak your answer</span>
+              <span id="voice-timer" style="font-size:0.8125rem;color:#697085;font-variant-numeric:tabular-nums"></span>
+            </div>
+            <!-- Live transcript display (voice mode only) -->
+            <div id="voice-transcript-wrap" class="hidden">
+              <p class="voice-fallback-note">Transcript of your spoken answer (editable):</p>
+              <div class="voice-transcript" id="voice-transcript" contenteditable="true"
+                   role="textbox" aria-multiline="true" aria-label="Voice transcript"
+                   spellcheck="true"></div>
+            </div>
+            <textarea id="answer-input"
+              placeholder="Type your answer here. Take your time — think through the question carefully."
+              rows="6" maxlength="5000" autocomplete="off"
+              oninput="updateCharCounter('answer-input', 'answer-counter', 5000)"></textarea>
+            <div class="char-counter" id="answer-counter">0 / 5000</div>
+          </div>
           <div id="answer-error" class="alert alert-error hidden">
             <span class="alert__icon">⚠</span>
-            <span class="alert__text">Please enter an answer before submitting.</span>
+            <span class="alert__text">Please enter or speak an answer before submitting.</span>
           </div>
           <div class="answer-actions">
             <button class="btn btn-primary" id="submit-btn" onclick="submitAnswer()">
               Submit Answer
             </button>
-            <button class="btn btn-danger" onclick="endInterview()">
+            <button class="btn btn-danger" id="end-btn" onclick="endInterview()">
               End &amp; Get Report
             </button>
           </div>
@@ -667,7 +1083,18 @@
         </div>
         <div class="bottom-nav">
           <button class="btn btn-secondary" onclick="endInterview()">End &amp; Get Report</button>
-          <button class="btn btn-primary" onclick="nextQuestion()">Next Question →</button>
+          <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+        </div>
+        <!-- Round transition panel — shown when a round completes and more rounds remain -->
+        <div id="round-transition" class="hidden">
+          <div class="eval-section" style="border:2px solid #0062ff;border-radius:10px;padding:18px;margin-top:12px;background:#f0f5ff;">
+            <p class="eval-section__title" id="round-transition-title" style="color:#0043ce;font-size:1rem;margin-bottom:8px">Round Complete</p>
+            <p id="round-transition-msg" style="font-size:0.9rem;color:#444;margin-bottom:14px"></p>
+            <div class="bottom-nav" style="margin-top:0">
+              <button class="btn btn-secondary" onclick="endInterview()">End &amp; Get Report</button>
+              <button class="btn btn-primary" id="continue-round-btn" onclick="advanceToNextRound()">Continue to Next Round →</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -696,6 +1123,23 @@
 
         <div class="scores-grid" id="report-scores"></div>
 
+        <!-- Per-round breakdown table (v2 sessions only) -->
+        <div id="report-rounds-section" class="eval-section hidden">
+          <p class="eval-section__title">Round-by-Round Summary</p>
+          <table id="report-rounds-table" style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+            <thead>
+              <tr style="border-bottom:2px solid #dde1ec;">
+                <th style="text-align:left;padding:6px 8px;color:#5a5f7a;font-weight:600">#</th>
+                <th style="text-align:left;padding:6px 8px;color:#5a5f7a;font-weight:600">Round</th>
+                <th style="text-align:left;padding:6px 8px;color:#5a5f7a;font-weight:600">Type</th>
+                <th style="text-align:center;padding:6px 8px;color:#5a5f7a;font-weight:600">Questions</th>
+                <th style="text-align:center;padding:6px 8px;color:#5a5f7a;font-weight:600">Score</th>
+              </tr>
+            </thead>
+            <tbody id="report-rounds-body"></tbody>
+          </table>
+        </div>
+
         <div class="eval-section">
           <p class="eval-section__title">Strengths</p>
           <div class="tag-list" id="report-strengths"></div>
@@ -711,6 +1155,7 @@
 
         <div class="eval-section">
           <p class="eval-section__title">Turn-by-Turn Review</p>
+          <p class="hint" style="margin-bottom:10px">Click any question to expand the full feedback.</p>
           <div class="turn-history" id="turn-history"></div>
         </div>
 
@@ -721,7 +1166,7 @@
     </div>
   </section>
 
-  <!-- ░░░ SCREEN 5: ERROR ░░░ -->
+  <!-- ░░░ SCREEN 5: FATAL ERROR ░░░ -->
   <section id="screen-error" class="screen">
     <div class="card">
       <h2 class="card__title">Something went wrong</h2>
@@ -734,8 +1179,173 @@
         may be a connectivity issue. Please try again.
       </p>
       <div class="bottom-nav">
-        <button class="btn btn-secondary" onclick="showScreen('screen-interview')">← Retry</button>
-        <button class="btn btn-primary" onclick="resetAll()">Start Over</button>
+        <button class="btn btn-secondary" onclick="resetAll()">Start Over</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 6: LOGIN ░░░ -->
+  <section id="screen-login" class="screen">
+    <div class="card">
+      <h2 class="card__title">Sign In</h2>
+      <div id="login-error" class="alert alert-error hidden">
+        <span class="alert__icon">⚠</span>
+        <span class="alert__text" id="login-error-text"></span>
+      </div>
+      <div class="form-group">
+        <label for="login-email">Email <span class="required">*</span></label>
+        <input type="email" id="login-email" placeholder="you@example.com"
+          autocomplete="email" maxlength="320" />
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password <span class="required">*</span></label>
+        <div class="password-wrap">
+          <input type="password" id="login-password" placeholder="Your password"
+            autocomplete="current-password" maxlength="128" />
+          <button type="button" class="password-toggle"
+            onclick="togglePassword('login-password', this)" aria-label="Show password">👁</button>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">← Back</button>
+        <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:#5a5f7a">
+        No account? <button class="auth-nav__link" onclick="showScreen('screen-register')">Register here</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 7: REGISTER ░░░ -->
+  <section id="screen-register" class="screen">
+    <div class="card">
+      <h2 class="card__title">Create Account</h2>
+      <div id="register-error" class="alert alert-error hidden">
+        <span class="alert__icon">⚠</span>
+        <span class="alert__text" id="register-error-text"></span>
+      </div>
+      <div class="form-group">
+        <label for="reg-email">Email <span class="required">*</span></label>
+        <input type="email" id="reg-email" placeholder="you@example.com"
+          autocomplete="email" maxlength="320" />
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password <span class="required">*</span></label>
+        <div class="password-wrap">
+          <input type="password" id="reg-password" placeholder="At least 8 characters"
+            autocomplete="new-password" maxlength="128" />
+          <button type="button" class="password-toggle"
+            onclick="togglePassword('reg-password', this)" aria-label="Show password">👁</button>
+        </div>
+        <p class="hint">At least 8 characters.</p>
+      </div>
+      <div class="bottom-nav">
+        <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">← Back</button>
+        <button class="btn btn-primary" id="register-btn" onclick="doRegister()">Create Account →</button>
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:0.875rem;color:#5a5f7a">
+        Already have an account? <button class="auth-nav__link" onclick="showScreen('screen-login')">Sign in</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- ░░░ SCREEN 8: PROFILE ░░░ -->
+  <section id="screen-profile" class="screen">
+    <div class="card">
+      <h2 class="card__title">Candidate Profile</h2>
+      <div id="profile-error" class="alert alert-error hidden">
+        <span class="alert__icon">⚠</span>
+        <span class="alert__text" id="profile-error-text"></span>
+      </div>
+      <div id="profile-success" class="alert alert-info hidden">
+        <span class="alert__icon">✓</span>
+        <span class="alert__text" id="profile-success-text"></span>
+      </div>
+
+      <!-- Resume upload zone -->
+      <div class="form-group">
+        <label>Upload Resume <span style="color:#697085;font-weight:400">(optional — auto-fills profile)</span></label>
+        <div class="upload-zone" id="upload-zone"
+          onclick="document.getElementById('resume-file-input').click()"
+          ondragover="uploadDragOver(event)" ondragleave="uploadDragLeave(event)"
+          ondrop="uploadDrop(event)">
+          <div class="upload-zone__icon">📄</div>
+          <div class="upload-zone__text">Click or drag &amp; drop your resume</div>
+          <div class="upload-zone__hint">PDF or DOCX · max 5 MB</div>
+          <div class="upload-zone__file-info hidden" id="upload-file-info"></div>
+        </div>
+        <input type="file" id="resume-file-input" accept=".pdf,.docx"
+          style="display:none" onchange="uploadResumeFile(this.files[0])" />
+        <div id="upload-loading" class="spinner-wrap hidden" style="padding:16px 0">
+          <div class="spinner" style="width:28px;height:28px;border-width:3px"></div>
+          <p class="spinner-text" style="font-size:0.875rem">Uploading and extracting…</p>
+        </div>
+        <!-- Extract Profile button (appears after successful upload) -->
+        <div id="extract-profile-wrap" class="hidden" style="margin-top:10px">
+          <button class="btn btn-secondary" id="extract-profile-btn"
+            onclick="extractProfileFromResume()"
+            style="font-size:0.875rem;padding:8px 18px">
+            ✨ Auto-fill Profile with IBM Granite
+          </button>
+          <p class="hint" style="margin-top:6px">
+            IBM Granite will suggest profile fields from your resume text. You can edit them before saving.
+          </p>
+          <div id="extract-loading" class="hidden"
+            style="display:inline-flex;align-items:center;gap:8px;margin-top:6px">
+            <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
+            <span style="font-size:0.875rem;color:#5a5f7a">Extracting profile fields…</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prof-fullname">Full Name</label>
+        <input type="text" id="prof-fullname" placeholder="e.g. Priya Sharma" maxlength="200" />
+      </div>
+      <div class="form-group">
+        <label for="prof-phone">Phone</label>
+        <input type="text" id="prof-phone" placeholder="e.g. +91 98765 43210" maxlength="30" />
+      </div>
+      <div class="form-group">
+        <label for="prof-college">College / Institution</label>
+        <input type="text" id="prof-college" placeholder="e.g. IIT Bombay" maxlength="300" />
+      </div>
+      <div class="form-group">
+        <label for="prof-degree">Degree</label>
+        <input type="text" id="prof-degree" placeholder="e.g. B.Tech" maxlength="200" />
+      </div>
+      <div class="form-group">
+        <label for="prof-branch">Branch / Specialization</label>
+        <input type="text" id="prof-branch" placeholder="e.g. Computer Science" maxlength="200" />
+      </div>
+      <div class="form-group">
+        <label for="prof-year">Graduation Year</label>
+        <input type="text" id="prof-year" placeholder="e.g. 2025" maxlength="4" />
+      </div>
+      <div class="form-group">
+        <label for="prof-role">Target Job Role</label>
+        <input type="text" id="prof-role"
+          placeholder="e.g. Data Scientist, Cloud Engineer, any role…"
+          maxlength="200" />
+        <p class="hint">Free-form — enter any legitimate professional role.</p>
+      </div>
+      <div class="form-group">
+        <label for="prof-skills">Skills</label>
+        <textarea id="prof-skills" rows="3" maxlength="3000"
+          placeholder="Python, SQL, TensorFlow, Docker, …"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="prof-context">Interview Context / Background Summary</label>
+        <textarea id="prof-context" rows="4" maxlength="2000"
+          placeholder="Brief background passed to the AI interviewer (auto-filled from resume if available)"
+          oninput="updateCharCounter('prof-context', 'prof-context-counter', 2000)"></textarea>
+        <div class="char-counter" id="prof-context-counter">0 / 2000</div>
+        <p class="hint">This is sent to IBM Granite as your background context.</p>
+      </div>
+
+      <div class="bottom-nav">
+        <button class="btn btn-secondary" onclick="showScreen('screen-welcome')">← Back</button>
+        <button class="btn btn-primary" id="save-profile-btn" onclick="saveProfile()">Save &amp; Confirm →</button>
       </div>
     </div>
   </section>
@@ -743,46 +1353,501 @@
 </div><!-- /shell -->
 
 <script>
-/* ── State ─────────────────────────────────────────────────────────── */
-const state = {
-  sessionId: null,
-  candidateName: "",
-  role: "",
-  experienceLevel: "",
-  interviewType: "",
-  candidateContext: "",
-  currentQuestion: "",
-  turnNumber: 0,
-  maxTurns: 10,
-  turns: [],          // {question, answer, evaluation}
+"use strict";
+/* ══════════════════════════════════════════════════════════════════════
+   AI Interview Coach — Frontend Logic
+   Complete consolidated implementation — all fixes applied.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════════════════
+   1. AUTH STATE + AUTH FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+const auth = {
+  token:  localStorage.getItem("aic_token")   || null,
+  userId: localStorage.getItem("aic_user_id") ? parseInt(localStorage.getItem("aic_user_id"), 10) : null,
+  email:  localStorage.getItem("aic_email")   || null,
 };
 
-/* ── Screen navigation ──────────────────────────────────────────────── */
+function authSave(token, userId, email) {
+  auth.token  = token;
+  auth.userId = userId;
+  auth.email  = email;
+  localStorage.setItem("aic_token",   token);
+  localStorage.setItem("aic_user_id", String(userId));
+  localStorage.setItem("aic_email",   email);
+  updateAuthNav();
+}
+
+function authClear() {
+  auth.token  = null;
+  auth.userId = null;
+  auth.email  = null;
+  localStorage.removeItem("aic_token");
+  localStorage.removeItem("aic_user_id");
+  localStorage.removeItem("aic_email");
+  updateAuthNav();
+}
+
+function authLogout() {
+  authClear();
+  showScreen("screen-welcome");
+}
+
+function updateAuthNav() {
+  const anon    = document.getElementById("auth-nav-anon");
+  const user    = document.getElementById("auth-nav-user");
+  const emailEl = document.getElementById("auth-nav-email");
+  if (auth.token && auth.email) {
+    anon.classList.add("hidden");
+    user.classList.remove("hidden");
+    emailEl.textContent = auth.email;
+  } else {
+    anon.classList.remove("hidden");
+    user.classList.add("hidden");
+  }
+}
+
+function authHeaders() {
+  if (auth.token)
+    return { "Content-Type": "application/json", "Authorization": "Bearer " + auth.token };
+  return { "Content-Type": "application/json" };
+}
+
+/* ── Login ──────────────────────────────────────────────────────────── */
+async function doLogin() {
+  const email    = document.getElementById("login-email").value.trim().toLowerCase();
+  const password = document.getElementById("login-password").value;
+  document.getElementById("login-error").classList.add("hidden");
+  if (!email)    return showAuthError("login", "Please enter your email.");
+  if (!password) return showAuthError("login", "Please enter your password.");
+  const btn = document.getElementById("login-btn");
+  btn.disabled = true;
+  try {
+    const resp = await fetch("/auth/login", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ email, password }),
+    });
+    if (!resp.ok) {
+      const d = await safeDetail(resp);
+      return showAuthError("login", d);
+    }
+    const data = await resp.json();
+    authSave(data.access_token, data.user_id, data.email);
+    document.getElementById("login-password").value = "";
+    const dest = sessionStorage.getItem("aic_after_login");
+    sessionStorage.removeItem("aic_after_login");
+    if (dest === "setup") {
+      showSetup();
+    } else {
+      showScreen("screen-welcome");
+    }
+  } catch (err) {
+    showAuthError("login", "Network error: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── Register ───────────────────────────────────────────────────────── */
+async function doRegister() {
+  const email    = document.getElementById("reg-email").value.trim().toLowerCase();
+  const password = document.getElementById("reg-password").value;
+  document.getElementById("register-error").classList.add("hidden");
+  if (!email)                           return showAuthError("register", "Please enter your email.");
+  if (!password || password.length < 8) return showAuthError("register", "Password must be at least 8 characters.");
+  const btn = document.getElementById("register-btn");
+  btn.disabled = true;
+  try {
+    const resp = await fetch("/auth/register", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ email, password }),
+    });
+    if (!resp.ok) {
+      const d = await safeDetail(resp);
+      return showAuthError("register", d);
+    }
+    const data = await resp.json();
+    authSave(data.access_token, data.user_id, data.email);
+    document.getElementById("reg-password").value = "";
+    const dest = sessionStorage.getItem("aic_after_login");
+    sessionStorage.removeItem("aic_after_login");
+    showScreen("screen-profile");
+    loadProfile();
+    if (dest) sessionStorage.setItem("aic_after_profile", dest);
+  } catch (err) {
+    showAuthError("register", "Network error: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showAuthError(screen, msg) {
+  document.getElementById(screen + "-error-text").textContent = msg;
+  document.getElementById(screen + "-error").classList.remove("hidden");
+}
+
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === "password") {
+    input.type = "text";
+    btn.textContent = "🙈";
+    btn.setAttribute("aria-label", "Hide password");
+  } else {
+    input.type = "password";
+    btn.textContent = "👁";
+    btn.setAttribute("aria-label", "Show password");
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   2. PROFILE / RESUME FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+async function loadProfile() {
+  if (!auth.token) return;
+  try {
+    const resp = await fetch("/candidate/profile", { headers: authHeaders() });
+    if (resp.status === 404) return;
+    if (!resp.ok) return;
+    const p = await resp.json();
+    fillProfileForm(p);
+  } catch (_) {}
+}
+
+function fillProfileForm(p) {
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val != null) el.value = val;
+  };
+  set("prof-fullname", p.full_name);
+  set("prof-phone",    p.phone);
+  set("prof-college",  p.college);
+  set("prof-degree",   p.degree);
+  set("prof-branch",   p.branch);
+  set("prof-year",     p.graduation_year);
+  set("prof-role",     p.job_role);
+  set("prof-skills",   p.skills);
+  set("prof-context",  p.interview_context);
+  updateCharCounter("prof-context", "prof-context-counter", 2000);
+}
+
+async function saveProfile() {
+  if (!auth.token) { showScreen("screen-login"); return; }
+  document.getElementById("profile-error").classList.add("hidden");
+  document.getElementById("profile-success").classList.add("hidden");
+  const yearRaw  = document.getElementById("prof-year").value.trim();
+  const gradYear = yearRaw ? parseInt(yearRaw, 10) : null;
+  if (yearRaw && (isNaN(gradYear) || gradYear < 1980 || gradYear > 2040)) {
+    document.getElementById("profile-error-text").textContent = "Graduation year must be between 1980 and 2040.";
+    document.getElementById("profile-error").classList.remove("hidden");
+    return;
+  }
+  const body = {
+    full_name:          document.getElementById("prof-fullname").value.trim() || null,
+    phone:              document.getElementById("prof-phone").value.trim()    || null,
+    college:            document.getElementById("prof-college").value.trim()  || null,
+    degree:             document.getElementById("prof-degree").value.trim()   || null,
+    branch:             document.getElementById("prof-branch").value.trim()   || null,
+    graduation_year:    gradYear,
+    job_role:           document.getElementById("prof-role").value.trim()     || null,
+    skills:             document.getElementById("prof-skills").value.trim()   || null,
+    interview_context:  document.getElementById("prof-context").value.trim()  || null,
+  };
+  Object.keys(body).forEach(k => body[k] === null && delete body[k]);
+  const btn = document.getElementById("save-profile-btn");
+  btn.disabled = true;
+  try {
+    const resp = await fetch("/candidate/profile", {
+      method:  "PUT",
+      headers: authHeaders(),
+      body:    JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      const d = await safeDetail(resp);
+      document.getElementById("profile-error-text").textContent = d;
+      document.getElementById("profile-error").classList.remove("hidden");
+      return;
+    }
+    const confirmResp = await fetch("/candidate/profile/confirm", {
+      method:  "POST",
+      headers: authHeaders(),
+    });
+    if (confirmResp.ok) {
+      const p = await confirmResp.json();
+      fillProfileForm(p);
+      if (p.job_role) {
+        const jobRoleEl = document.getElementById("job-role");
+        if (jobRoleEl && !jobRoleEl.value) jobRoleEl.value = p.job_role;
+      }
+      if (p.interview_context) {
+        const ctxEl = document.getElementById("candidate-context");
+        if (ctxEl && !ctxEl.value) {
+          ctxEl.value = p.interview_context.slice(0, 2000);
+          updateCharCounter("candidate-context", "context-counter", 2000);
+        }
+      }
+    }
+    document.getElementById("profile-success-text").textContent = "Profile saved and confirmed!";
+    document.getElementById("profile-success").classList.remove("hidden");
+    const dest = sessionStorage.getItem("aic_after_profile");
+    if (dest === "setup") {
+      sessionStorage.removeItem("aic_after_profile");
+      setTimeout(() => showSetup(), 800);
+    }
+  } catch (err) {
+    document.getElementById("profile-error-text").textContent = "Network error: " + err.message;
+    document.getElementById("profile-error").classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── Resume upload ──────────────────────────────────────────────────── */
+function uploadDragOver(e) {
+  e.preventDefault();
+  document.getElementById("upload-zone").classList.add("drag-over");
+}
+function uploadDragLeave(e) {
+  document.getElementById("upload-zone").classList.remove("drag-over");
+}
+function uploadDrop(e) {
+  e.preventDefault();
+  document.getElementById("upload-zone").classList.remove("drag-over");
+  const file = e.dataTransfer.files[0];
+  if (file) uploadResumeFile(file);
+}
+
+async function uploadResumeFile(file) {
+  if (!file) return;
+  if (!auth.token) { showScreen("screen-login"); return; }
+  document.getElementById("profile-error").classList.add("hidden");
+  document.getElementById("profile-success").classList.add("hidden");
+  document.getElementById("extract-profile-wrap").classList.add("hidden");
+  const infoEl = document.getElementById("upload-file-info");
+  const loadEl = document.getElementById("upload-loading");
+  infoEl.classList.add("hidden");
+  loadEl.classList.remove("hidden");
+  const formData = new FormData();
+  formData.append("file", file);
+  try {
+    const resp = await fetch("/resume/upload", {
+      method:  "POST",
+      headers: { "Authorization": "Bearer " + auth.token },
+      body:    formData,
+    });
+    if (!resp.ok) {
+      const d = await safeDetail(resp);
+      document.getElementById("profile-error-text").textContent = d;
+      document.getElementById("profile-error").classList.remove("hidden");
+      return;
+    }
+    const data = await resp.json();
+    mcqState.currentResumeId = data.resume_id;
+    infoEl.textContent = "✓ " + (data.original_filename || file.name) + " — " + data.message;
+    infoEl.classList.remove("hidden");
+    await loadProfile();
+    const statusMsg = data.extraction_status === "success"
+      ? "Resume uploaded! Click 'Auto-fill Profile' below to extract your details with IBM Granite."
+      : "Resume uploaded. Text extraction was incomplete — please fill in your profile manually.";
+    document.getElementById("profile-success-text").textContent = statusMsg;
+    document.getElementById("profile-success").classList.remove("hidden");
+    if (data.extraction_status === "success") {
+      document.getElementById("extract-profile-wrap").classList.remove("hidden");
+    }
+  } catch (err) {
+    document.getElementById("profile-error-text").textContent = "Upload error: " + err.message;
+    document.getElementById("profile-error").classList.remove("hidden");
+  } finally {
+    loadEl.classList.add("hidden");
+  }
+}
+
+async function extractProfileFromResume() {
+  const rid = mcqState.currentResumeId;
+  if (!rid) {
+    document.getElementById("profile-error-text").textContent = "Please upload a resume first.";
+    document.getElementById("profile-error").classList.remove("hidden");
+    return;
+  }
+  if (!auth.token) { showScreen("screen-login"); return; }
+  const btn    = document.getElementById("extract-profile-btn");
+  const loadEl = document.getElementById("extract-loading");
+  btn.disabled = true;
+  loadEl.style.display = "inline-flex";
+  loadEl.classList.remove("hidden");
+  document.getElementById("profile-error").classList.add("hidden");
+  document.getElementById("profile-success").classList.add("hidden");
+  try {
+    const resp = await fetch("/resume/" + rid + "/extract-profile", {
+      method:  "POST",
+      headers: authHeaders(),
+    });
+    if (!resp.ok) {
+      const d = await safeDetail(resp);
+      document.getElementById("profile-error-text").textContent = d;
+      document.getElementById("profile-error").classList.remove("hidden");
+      return;
+    }
+    const data = await resp.json();
+    if (data.status === "unavailable") {
+      document.getElementById("profile-success-text").textContent =
+        "IBM Granite unavailable for extraction. Please fill in the profile manually.";
+      document.getElementById("profile-success").classList.remove("hidden");
+      return;
+    }
+    const set = (id, val) => { if (val != null) { const el = document.getElementById(id); if (el) el.value = val; } };
+    set("prof-fullname", data.full_name);
+    set("prof-phone",    data.phone);
+    set("prof-college",  data.college);
+    set("prof-degree",   data.degree);
+    set("prof-branch",   data.branch);
+    set("prof-year",     data.graduation_year);
+    set("prof-skills",   data.skills);
+    if (data.suggested_role) {
+      const roleEl = document.getElementById("prof-role");
+      if (roleEl && !roleEl.value) roleEl.value = data.suggested_role;
+    }
+    document.getElementById("profile-success-text").textContent =
+      data.message || "Profile fields extracted. Please review, edit if needed, then Save.";
+    document.getElementById("profile-success").classList.remove("hidden");
+  } catch (err) {
+    document.getElementById("profile-error-text").textContent = "Extraction error: " + err.message;
+    document.getElementById("profile-error").classList.remove("hidden");
+  } finally {
+    btn.disabled = false;
+    loadEl.style.display = "none";
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   3. STATE + NAVIGATION
+   ══════════════════════════════════════════════════════════════════════ */
+
+const state = {
+  sessionId:          null,
+  candidateName:      "",
+  role:               "",
+  experienceLevel:    "",
+  interviewType:      "",
+  candidateContext:   "",
+  currentQuestion:    "",
+  turnNumber:         0,
+  maxTurns:           10,
+  turns:              [],        // [{question, answer, evaluation}]
+  _pendingNextQuestion: null,
+  _pendingNextOptions:  null,    // MCQ options for next question
+  _pendingNextGdRole:   null,    // GD: role of next AI participant
+  _pendingNextPersona:  null,    // GD: persona name of next AI participant
+  _interviewComplete:   false,
+  _inProgress:          false,
+  // Multi-round plan state (v2 API)
+  _plan:              null,
+  _roundId:           null,
+  _roundTitle:        "",
+  _roundOrder:        0,
+  _totalRounds:       0,
+  _useV2:             false,
+  _currentRoundInfo:  null,      // full current_round object from last API response
+  _pendingVoiceData:  null,      // {answer, transcript, voiceDurationSec, isVoice}
+};
+
+window.addEventListener("beforeunload", function (e) {
+  if (state._inProgress && state.turns.length > 0) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
 function showScreen(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function updateCharCounter(inputId, counterId, max) {
+  const len = document.getElementById(inputId).value.length;
+  const el  = document.getElementById(counterId);
+  el.textContent = len + " / " + max;
+  el.className   = "char-counter";
+  if (len > max * 0.9) el.classList.add("warn");
+  if (len >= max)      el.classList.add("over");
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   4. INTERVIEW SETUP + showSetup + startInterview
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* showSetup — auth guard: redirect to login if not authenticated,
+   redirect back to setup after login/register. */
 function showSetup() {
+  if (!auth.token) {
+    // Not logged in — remember destination, redirect to login
+    sessionStorage.setItem("aic_after_login", "setup");
+    const authPrompt = document.getElementById("setup-auth-prompt");
+    authPrompt && authPrompt.classList.remove("hidden");
+    const profileBanner = document.getElementById("setup-profile-banner");
+    profileBanner && profileBanner.classList.add("hidden");
+    showScreen("screen-setup");
+    return;
+  }
+  const authPrompt = document.getElementById("setup-auth-prompt");
+  authPrompt && authPrompt.classList.add("hidden");
+  // Pre-fill from profile (async, non-blocking)
+  _prefillSetupFromProfile();
   showScreen("screen-setup");
 }
 
-/* ── Setup → start interview ────────────────────────────────────────── */
+function showLoginThenSetup() {
+  sessionStorage.setItem("aic_after_login", "setup");
+  showScreen("screen-login");
+}
+
+async function _prefillSetupFromProfile() {
+  if (!auth.token) return;
+  try {
+    const resp = await fetch("/candidate/profile", { headers: authHeaders() });
+    if (!resp.ok) return;
+    const p = await resp.json();
+    const nameEl = document.getElementById("candidate-name");
+    const roleEl = document.getElementById("job-role");
+    if (nameEl && !nameEl.value && p.full_name) nameEl.value = p.full_name;
+    if (roleEl && !roleEl.value && p.job_role)  roleEl.value = p.job_role;
+    if (p.is_confirmed) {
+      const banner     = document.getElementById("setup-profile-banner");
+      const bannerText = document.getElementById("setup-profile-banner-text");
+      if (banner && bannerText) {
+        bannerText.textContent = "✓ Your confirmed profile will be auto-used. Context: " +
+          (p.interview_context
+            ? p.interview_context.slice(0, 80) + (p.interview_context.length > 80 ? "…" : "")
+            : "set");
+        banner.classList.remove("hidden");
+      }
+    }
+  } catch (_) {}
+}
+
+function showSetupError(msg) {
+  document.getElementById("setup-error-text").textContent = msg;
+  document.getElementById("setup-error").classList.remove("hidden");
+}
+
 async function startInterview() {
-  const name      = document.getElementById("candidate-name").value.trim();
-  const role      = document.getElementById("job-role").value.trim();
-  const level     = document.getElementById("experience-level").value;
-  const type      = document.getElementById("interview-type").value;
-  const context   = document.getElementById("candidate-context").value.trim();
+  const name    = document.getElementById("candidate-name").value.trim();
+  const role    = document.getElementById("job-role").value.trim();
+  const level   = document.getElementById("experience-level").value;
+  const type    = document.getElementById("interview-type").value;
+  const context = document.getElementById("candidate-context").value.trim();
 
   document.getElementById("setup-error").classList.add("hidden");
 
-  if (!name) { return showSetupError("Please enter your name."); }
-  if (!role || role.length < 2) { return showSetupError("Please enter a target job role (at least 2 characters)."); }
-  if (!level) { return showSetupError("Please select your experience level."); }
-  if (!type)  { return showSetupError("Please select an interview type."); }
-  if (context.length > 2000) { return showSetupError("Background context must be under 2000 characters."); }
+  if (!name)              return showSetupError("Please enter your name.");
+  if (!role || role.length < 2) return showSetupError("Please enter a target job role (at least 2 characters).");
+  if (!level)             return showSetupError("Please select your experience level.");
+  if (!type)              return showSetupError("Please select an interview type.");
+  if (context.length > 2000) return showSetupError("Background context must be under 2000 characters.");
 
   state.candidateName    = name;
   state.role             = role;
@@ -792,166 +1857,526 @@ async function startInterview() {
   state.sessionId        = null;
   state.turnNumber       = 0;
   state.turns            = [];
+  state._pendingNextQuestion = null;
+  state._pendingNextOptions  = null;
+  state._interviewComplete   = false;
+  state._inProgress          = true;
+  state._plan                = null;
+  state._roundId             = null;
+  state._roundTitle          = "";
+  state._roundOrder          = 0;
+  state._totalRounds         = 0;
+  state._useV2               = false;
+  state._currentRoundInfo    = null;
 
-  // Update meta badges
   document.getElementById("meta-role").textContent  = role;
   document.getElementById("meta-level").textContent = level;
   document.getElementById("meta-type").textContent  = type;
-
+  document.getElementById("meta-round").classList.add("hidden");
+  document.getElementById("answer-area").classList.add("hidden");
+  document.getElementById("turn-eval").classList.add("hidden");
+  document.getElementById("question-display").textContent = "";
+  document.getElementById("turn-counter").textContent = "";
+  document.getElementById("interview-error-banner").classList.add("hidden");
   showScreen("screen-interview");
+
+  const beginBtn = document.getElementById("begin-btn");
+  beginBtn.disabled = true;
   setInterviewLoading(true, "Creating your session on IBM watsonx.ai…");
 
   try {
-    const resp = await fetch("/interview/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        candidate_name:   name,
-        role:             role,
-        experience_level: level,
-        interview_type:   type,
-        candidate_context: context || null,
-      }),
-    });
+    let data   = null;
+    let usedV2 = false;
 
-    if (!resp.ok) {
-      const detail = await safeDetail(resp);
-      return showInterviewError("Failed to start session: " + detail);
+    try {
+      const v2Payload = {
+        candidate_name:      name,
+        role:                role,
+        experience_level:    level,
+        interview_type:      type,
+        candidate_context:   context || null,
+        // send use_profile_context when authenticated and no manual context provided
+        use_profile_context: auth.token ? !context : false,
+      };
+      const v2Headers = auth.token
+        ? { "Content-Type": "application/json", "Authorization": "Bearer " + auth.token }
+        : { "Content-Type": "application/json" };
+      const v2Resp = await fetch("/v2/interview/session", {
+        method:  "POST",
+        headers: v2Headers,
+        body:    JSON.stringify(v2Payload),
+      });
+      if (v2Resp.ok) {
+        data   = await v2Resp.json();
+        usedV2 = true;
+      }
+    } catch (_) {}
+
+    if (!usedV2) {
+      const resp = await fetch("/interview/session", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          candidate_name:    name,
+          role:              role,
+          experience_level:  level,
+          interview_type:    type,
+          candidate_context: context || null,
+        }),
+      });
+      if (!resp.ok) {
+        const detail = await safeDetail(resp);
+        return showFatalError("Failed to start session: " + detail);
+      }
+      data = await resp.json();
     }
 
-    const data = await resp.json();
-    state.sessionId      = data.session_id;
+    state.sessionId       = data.session_id;
     state.currentQuestion = data.first_question;
     state.turnNumber      = 1;
-    updateProgress();
+    state._useV2          = usedV2;
 
-    document.getElementById("question-display").textContent = data.first_question;
-    document.getElementById("turn-counter").textContent = "Question 1";
-    document.getElementById("answer-input").value = "";
-    document.getElementById("answer-error").classList.add("hidden");
-    document.getElementById("turn-eval").classList.add("hidden");
-    document.getElementById("answer-area").classList.remove("hidden");
+    if (usedV2 && data.plan) {
+      state._plan        = data.plan;
+      state._roundId     = data.round_id;
+      state._totalRounds = data.plan.total_rounds || 0;
+      const currentRound = data.current_round;
+      if (currentRound) {
+        state._roundTitle       = currentRound.title || currentRound.round_type || "";
+        state._roundOrder       = currentRound.order || 1;
+        state._currentRoundInfo = currentRound;
+        if (currentRound.time_limit_minutes) {
+          startRoundTimer(currentRound.time_limit_minutes, 0);
+        }
+      }
+      const roundBadge = document.getElementById("meta-round");
+      if (state._totalRounds > 1) {
+        roundBadge.textContent =
+          "Round " + state._roundOrder + " of " + state._totalRounds +
+          (state._roundTitle ? " · " + state._roundTitle : "");
+        roundBadge.classList.remove("hidden");
+      }
+    }
+
+    updateProgress();
+    displayQuestion(data.first_question, data.options || null, data.current_round || null);
 
   } catch (err) {
-    showInterviewError("Network error: " + err.message);
+    showFatalError("Network error: " + err.message);
   } finally {
     setInterviewLoading(false);
+    beginBtn.disabled = false;
   }
 }
 
-function showSetupError(msg) {
-  document.getElementById("setup-error-text").textContent = msg;
-  document.getElementById("setup-error").classList.remove("hidden");
+/* ══════════════════════════════════════════════════════════════════════
+   5. displayQuestion + MCQ FUNCTIONS (including resetMCQState)
+   ══════════════════════════════════════════════════════════════════════ */
+
+const mcqState = {
+  currentOptions:  null,   // ["A. ...", "B. ...", "C. ...", "D. ..."]
+  selectedOption:  null,   // "A" | "B" | "C" | "D"
+  isMCQRound:      false,
+  currentResumeId: null,   // resume_id after last successful upload
+};
+
+function resetMCQState() {
+  hideMCQOptions();
 }
 
-/* ── Display a question already received from the server ────────────── */
-function displayQuestion(question) {
+function showMCQOptions(options) {
+  if (!options || !options.length) return;
+  mcqState.currentOptions = options;
+  mcqState.selectedOption = null;
+  const listEl  = document.getElementById("mcq-options-list");
+  listEl.innerHTML = "";
+  const letters = ["A", "B", "C", "D"];
+  options.forEach((optText, i) => {
+    const letter      = letters[i] || String.fromCharCode(65 + i);
+    const displayText = optText.replace(/^[A-D][.)]\s*/i, "");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "mcq-option";
+    btn.dataset.option = letter;
+    btn.innerHTML =
+      '<span class="mcq-letter">' + escHtml(letter) + '</span>' +
+      '<span>' + escHtml(displayText) + '</span>';
+    btn.onclick = () => selectMCQOption(letter, btn);
+    listEl.appendChild(btn);
+  });
+  document.getElementById("mcq-area").classList.remove("hidden");
+  document.getElementById("freetext-area").classList.add("hidden");
+  document.getElementById("mcq-instant-feedback").classList.add("hidden");
+}
+
+function selectMCQOption(letter, clickedBtn) {
+  if (document.getElementById("submit-btn").disabled) return;
+  mcqState.selectedOption = letter;
+  document.querySelectorAll(".mcq-option").forEach(b => {
+    b.classList.toggle("selected", b.dataset.option === letter);
+  });
+}
+
+function hideMCQOptions() {
+  document.getElementById("mcq-area").classList.add("hidden");
+  document.getElementById("freetext-area").classList.remove("hidden");
+  mcqState.isMCQRound     = false;
+  mcqState.currentOptions = null;
+  mcqState.selectedOption = null;
+}
+
+/* correctAnswerText — reads live button text for MCQ feedback display */
+function correctAnswerText(letter) {
+  if (!letter) return "—";
+  const btns = document.querySelectorAll(".mcq-option");
+  for (const b of btns) {
+    if (b.dataset.option === letter) {
+      const textEl = b.querySelector("span:last-child");
+      const txt    = textEl ? textEl.textContent.trim() : "";
+      return letter + (txt ? ". " + txt : "");
+    }
+  }
+  return letter;
+}
+
+function showMCQFeedback(mcqFeedback) {
+  if (!mcqFeedback) return;
+  const bar   = document.getElementById("mcq-feedback-bar");
+  const expEl = document.getElementById("mcq-explanation");
+  const wrap  = document.getElementById("mcq-instant-feedback");
+
+  if (mcqFeedback.is_correct) {
+    bar.textContent = "✓ Correct!";
+    bar.className   = "mcq-feedback-bar correct-bar";
+    document.querySelectorAll(".mcq-option").forEach(b => {
+      if (b.dataset.option === mcqFeedback.correct_option) b.classList.add("correct");
+    });
+  } else {
+    const ca = correctAnswerText(mcqFeedback.correct_option);
+    if (mcqFeedback.timed_out) {
+      bar.textContent = "⏱ Time expired. Correct answer: " + ca;
+    } else {
+      bar.textContent = "✗ Incorrect. Correct answer: " + ca;
+    }
+    bar.className = "mcq-feedback-bar incorrect-bar";
+    document.querySelectorAll(".mcq-option").forEach(b => {
+      if (b.dataset.option === mcqState.selectedOption)   b.classList.add("incorrect");
+      if (b.dataset.option === mcqFeedback.correct_option) b.classList.add("correct");
+    });
+  }
+
+  if (mcqFeedback.explanation) {
+    expEl.textContent = mcqFeedback.explanation;
+    expEl.classList.remove("hidden");
+  } else {
+    expEl.classList.add("hidden");
+  }
+  document.querySelectorAll(".mcq-option").forEach(b => { b.disabled = true; });
+  wrap.classList.remove("hidden");
+}
+
+/**
+ * displayQuestion — single consolidated implementation.
+ * @param {string}      question  - question text
+ * @param {Array|null}  options   - MCQ options or null
+ * @param {object|null} roundInfo - current_round object from API or null
+ */
+function displayQuestion(question, options, roundInfo) {
   state.currentQuestion = question;
   updateProgress();
+
+  const roundType = roundInfo ? roundInfo.round_type : null;
+  const isMCQ     = options && options.length >= 2;
+  const isGD      = roundType === "gd";
+  const isComm    = roundType === "communication";
+  const isHR      = roundType === "hr";
+
   document.getElementById("question-display").textContent = question;
-  document.getElementById("turn-counter").textContent = `Question ${state.turnNumber}`;
+
+  let counterText = "Question " + state.turnNumber;
+  if (state._totalRounds > 0) {
+    counterText += " · Round " + state._roundOrder + " of " + state._totalRounds;
+  } else {
+    counterText += " of " + state.maxTurns;
+  }
+  document.getElementById("turn-counter").textContent = counterText;
+
+  const questionLabel = document.getElementById("question-label-text");
+  const freetextLabel = document.getElementById("freetext-label");
+  if (questionLabel) {
+    if (isGD)        questionLabel.textContent = "Group Discussion";
+    else if (isComm) questionLabel.textContent = "Communication Question";
+    else if (isHR)   questionLabel.textContent = "HR Question";
+    else             questionLabel.textContent = "Interview Question";
+  }
+  if (freetextLabel) {
+    if (isGD)        freetextLabel.textContent = "Your Contribution";
+    else if (isComm) freetextLabel.textContent = "Your Answer (voice recommended)";
+    else if (isHR)   freetextLabel.textContent = "Your Answer (voice or text)";
+    else             freetextLabel.textContent = "Your Answer";
+  }
+
   document.getElementById("answer-input").value = "";
+  document.getElementById("answer-counter").textContent = "0 / 5000";
   document.getElementById("answer-error").classList.add("hidden");
   document.getElementById("turn-eval").classList.add("hidden");
   document.getElementById("answer-area").classList.remove("hidden");
+
+  if (isMCQ) {
+    mcqState.isMCQRound = true;
+    showMCQOptions(options);
+  } else {
+    hideMCQOptions();
+  }
+
+  const voiceControlsEl = document.getElementById("voice-controls");
+  if (voiceControlsEl) {
+    if (voiceState.supported && (isComm || isHR || isGD)) {
+      voiceControlsEl.classList.remove("hidden");
+    } else {
+      voiceControlsEl.classList.add("hidden");
+    }
+  }
+
+  if (isGD) {
+    document.getElementById("gd-area").classList.remove("hidden");
+    if (!gdState.isGDRound) {
+      initGDRound(question, roundInfo);
+    } else {
+      const gdRole    = state._pendingNextGdRole  || "ai_participant";
+      const gdPersona = state._pendingNextPersona || "Participant";
+      state._pendingNextGdRole  = null;
+      state._pendingNextPersona = null;
+      if (gdRole !== "candidate") {
+        appendGDTurn(gdRole, gdPersona, question);
+      }
+    }
+  } else if (gdState.isGDRound) {
+    resetGDState();
+  }
+
+  if (!isMCQ) {
+    document.getElementById("answer-input").focus();
+  }
 }
 
-/* ── Submit answer ──────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   6. submitAnswer — consolidated, no duplicates
+   ══════════════════════════════════════════════════════════════════════ */
+
 async function submitAnswer() {
-  const answer = document.getElementById("answer-input").value.trim();
-  const errEl  = document.getElementById("answer-error");
+  let answer        = "";
+  let selectedOption = null;
 
-  if (!answer) {
-    errEl.classList.remove("hidden");
-    document.getElementById("answer-input").focus();
-    return;
+  if (mcqState.isMCQRound) {
+    if (!mcqState.selectedOption) {
+      document.getElementById("answer-error").classList.remove("hidden");
+      return;
+    }
+    selectedOption = mcqState.selectedOption;
+    answer         = selectedOption;
+  } else {
+    const voiceData = getVoiceAnswer();
+    if (voiceData && voiceData.answer && !voiceState.isRecording) {
+      answer = voiceData.answer;
+      const answerEl = document.getElementById("answer-input");
+      if (answerEl && !answerEl.value.trim()) answerEl.value = answer;
+      state._pendingVoiceData = voiceData;
+    } else {
+      answer = document.getElementById("answer-input").value.trim();
+      state._pendingVoiceData = null;
+    }
+    // Empty voice transcript after stop → show "No speech detected"
+    if (!answer) {
+      if (voiceState.supported && !voiceState.isRecording &&
+          document.getElementById("voice-transcript-wrap") &&
+          !document.getElementById("voice-transcript-wrap").classList.contains("hidden")) {
+        document.getElementById("voice-status").textContent =
+          "No speech detected. Please use the text input below.";
+        _showTextInputFallback();
+      }
+      document.getElementById("answer-error").classList.remove("hidden");
+      document.getElementById("answer-input").focus();
+      return;
+    }
   }
-  errEl.classList.add("hidden");
 
-  setInterviewLoading(true, "IBM Granite is evaluating your answer…");
+  document.getElementById("answer-error").classList.add("hidden");
+
+  const submitBtn = document.getElementById("submit-btn");
+  const endBtn    = document.getElementById("end-btn");
+  submitBtn.disabled = true;
+  endBtn.disabled    = true;
+
+  const loadingText = mcqState.isMCQRound
+    ? "Recording your answer…"
+    : "IBM Granite is evaluating your answer…";
+  setInterviewLoading(true, loadingText);
   document.getElementById("answer-area").classList.add("hidden");
 
   try {
-    const resp = await fetch(`/interview/session/${state.sessionId}/answer`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    let resp;
+    if (state._useV2 && state._roundId) {
+      const vd      = state._pendingVoiceData;
+      const payload = {
+        round_id:          state._roundId,
         question:          state.currentQuestion,
         answer:            answer,
         candidate_context: state.candidateContext || null,
-      }),
-    });
+        selected_option:   selectedOption,
+      };
+      if (vd && vd.isVoice) {
+        payload.voice_input_mode   = "voice";
+        payload.transcript         = vd.transcript || null;
+        payload.voice_duration_sec = vd.voiceDurationSec || null;
+      }
+      resp = await fetch("/v2/interview/session/" + state.sessionId + "/answer", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
+      });
+    } else {
+      resp = await fetch("/interview/session/" + state.sessionId + "/answer", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          question:          state.currentQuestion,
+          answer:            answer,
+          candidate_context: state.candidateContext || null,
+        }),
+      });
+    }
 
     if (!resp.ok) {
       const detail = await safeDetail(resp);
       document.getElementById("answer-area").classList.remove("hidden");
-      return showInterviewError("Evaluation failed: " + detail);
+      showInlineError("Submission failed: " + detail + " — please try again.");
+      return;
     }
 
-    const data = await resp.json();
-    const evaluation = data.evaluation;
+    const data       = await resp.json();
+    const evaluation = data.evaluation || {};
 
-    state.turns.push({
-      question: state.currentQuestion,
-      answer: answer,
-      evaluation: evaluation,
-    });
+    // MCQ fix: inject correct_option and is_correct from mcq_feedback into evaluation
+    if (data.mcq_feedback && typeof data.mcq_feedback === "object") {
+      if (evaluation.correct_option == null && data.mcq_feedback.correct_option != null)
+        evaluation.correct_option = data.mcq_feedback.correct_option;
+      if (evaluation.is_correct == null && data.mcq_feedback.is_correct != null)
+        evaluation.is_correct = data.mcq_feedback.is_correct;
+    }
 
-    // Store next question now; will be displayed when user clicks Next
+    state.turns.push({ question: state.currentQuestion, answer, evaluation });
     state._pendingNextQuestion = data.next_question || null;
-    state._interviewComplete   = data.interview_complete || false;
+    state._pendingNextOptions  = data.next_options  || null;
+    state._interviewComplete   = data.interview_complete || data.plan_complete || false;
 
-    renderTurnEvaluation(evaluation);
+    if (gdState.isGDRound) appendGDTurn("candidate", "You", answer);
+    if (data.next_gd_role) state._pendingNextGdRole  = data.next_gd_role;
+    if (data.next_persona) state._pendingNextPersona = data.next_persona;
+
+    // Timer fix: only start timer when round_id CHANGES
+    if (data.current_round) {
+      const prevRoundId = state._roundId;
+      state._currentRoundInfo = data.current_round;
+      if (data.current_round.round_id !== prevRoundId && data.current_round.time_limit_minutes) {
+        startRoundTimer(
+          data.current_round.time_limit_minutes,
+          data.current_round.elapsed_seconds || 0
+        );
+      }
+    }
+
+    if (state._useV2 && data.plan) {
+      state._plan = data.plan;
+      if (data.round_complete && data.round_summary) {
+        const rs = data.round_summary;
+        document.getElementById("turn-counter").textContent =
+          "Round " + state._roundOrder + " complete · Score: " +
+          (rs.score != null ? rs.score + "/10" : "—") +
+          (rs.correct_count != null && rs.total_questions != null
+            ? " (" + rs.correct_count + "/" + rs.total_questions + " correct)"
+            : "");
+      }
+    }
+
+    const nextBtn = document.getElementById("next-btn");
+    if (state._interviewComplete || (!state._useV2 && state.turnNumber >= state.maxTurns)) {
+      nextBtn.textContent = "View Report →";
+    } else {
+      nextBtn.textContent = "Next Question →";
+    }
+
+    if (mcqState.isMCQRound && data.mcq_feedback) {
+      document.getElementById("answer-area").classList.remove("hidden");
+      showMCQFeedback(data.mcq_feedback);
+      renderTurnEvaluation({
+        overall_score:           data.score || (data.mcq_feedback.is_correct ? 10 : 0),
+        evaluation:              data.mcq_feedback.is_correct
+                                   ? "Correct!"
+                                   : "Incorrect. " + (data.mcq_feedback.explanation || ""),
+        strengths:               [],
+        weaknesses:              [],
+        improvement_suggestions: [],
+      });
+    } else {
+      renderTurnEvaluation(evaluation);
+    }
+
+    if (data.round_complete && !data.plan_complete) {
+      showRoundTransition(data.round_summary || {});
+    }
 
   } catch (err) {
     document.getElementById("answer-area").classList.remove("hidden");
-    showInterviewError("Network error: " + err.message);
+    showInlineError("Network error: " + err.message + " — please try again.");
   } finally {
     setInterviewLoading(false);
+    submitBtn.disabled = false;
+    endBtn.disabled    = false;
+    resetVoiceState();
+    state._pendingVoiceData = null;
   }
 }
 
-/* ── Render per-turn evaluation ─────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   7. renderTurnEvaluation
+   ══════════════════════════════════════════════════════════════════════ */
+
 function renderTurnEvaluation(ev) {
-  // Scores
   const scoreMap = {
-    "Overall":       ev.overall_score,
-    "Technical":     ev.technical_score,
-    "Relevance":     ev.relevance_score,
-    "Clarity":       ev.clarity_score,
-    "Communication": ev.communication_score,
-    "Completeness":  ev.completeness_score,
+    "Overall":          ev.overall_score,
+    "Technical":        ev.technical_score,
+    "Relevance":        ev.relevance_score,
+    "Clarity":          ev.clarity_score,
+    "Communication":    ev.communication_score,
+    "Completeness":     ev.completeness_score,
+    "Language Quality": ev.language_quality_score,
+    "Structure":        ev.response_structure_score,
   };
 
   const scoresEl = document.getElementById("turn-scores");
   scoresEl.innerHTML = "";
   for (const [label, val] of Object.entries(scoreMap)) {
-    if (val !== undefined && val !== null) {
+    if (val !== undefined && val !== null && val !== 0) {
       scoresEl.appendChild(makeScoreCard(label, val));
     }
   }
 
-  // Strengths
   const strEl = document.getElementById("turn-strengths");
   strEl.innerHTML = "";
-  (ev.strengths || []).forEach(s => {
-    strEl.appendChild(makeTag(s, "tag-strength"));
-  });
-  if (!strEl.children.length) strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+  (ev.strengths || []).forEach(s => strEl.appendChild(makeTag(s, "tag-strength")));
+  if (!strEl.children.length)
+    strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
 
-  // Weaknesses
   const weakEl = document.getElementById("turn-weaknesses");
   weakEl.innerHTML = "";
-  (ev.weaknesses || []).forEach(w => {
-    weakEl.appendChild(makeTag(w, "tag-weakness"));
-  });
-  if (!weakEl.children.length) weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+  (ev.weaknesses || []).forEach(w => weakEl.appendChild(makeTag(w, "tag-weakness")));
+  if (!weakEl.children.length)
+    weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
 
-  // Feedback / evaluation text
   const fb = ev.evaluation || ev.feedback || "";
   document.getElementById("turn-feedback").textContent = fb || "No feedback provided.";
 
-  // Improvement suggestions
   const sugEl = document.getElementById("turn-suggestions");
   sugEl.innerHTML = "";
   const suggestions = ev.improvement_suggestions || ev.improvement_plan || [];
@@ -959,48 +2384,159 @@ function renderTurnEvaluation(ev) {
   document.getElementById("turn-suggestions-section").style.display =
     suggestions.length ? "" : "none";
 
+  document.getElementById("round-transition").classList.add("hidden");
   document.getElementById("turn-eval").classList.remove("hidden");
 }
 
-/* ── Next question ──────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════
+   8. nextQuestion + endInterview + buildReport + renderV2Report
+   ══════════════════════════════════════════════════════════════════════ */
+
 function nextQuestion() {
-  if (state._interviewComplete || state.turnNumber >= state.maxTurns) {
+  if (state._interviewComplete || (!state._useV2 && state.turnNumber >= state.maxTurns)) {
     endInterview();
     return;
   }
   const next = state._pendingNextQuestion;
-  if (!next) {
-    endInterview();
-    return;
-  }
-  state.turnNumber += 1;
+  if (!next) { endInterview(); return; }
+  state.turnNumber          += 1;
   state._pendingNextQuestion = null;
+  const nextOpts             = state._pendingNextOptions || null;
+  state._pendingNextOptions  = null;
+
   document.getElementById("turn-eval").classList.add("hidden");
-  displayQuestion(next);
+  hideRoundTransition();
+  // UI fix: pass _currentRoundInfo so round type is preserved
+  displayQuestion(next, nextOpts, state._currentRoundInfo);
 }
 
-/* ── End interview → report ─────────────────────────────────────────── */
 function endInterview() {
-  if (state.turns.length === 0) {
-    resetAll();
-    return;
-  }
+  if (state.turns.length === 0) { resetAll(); return; }
+  stopRoundTimer();
+  state._inProgress = false;
   showScreen("screen-report");
   buildReport();
 }
 
-function buildReport() {
-  // Overall average
-  const overall = avg(state.turns.map(t => t.evaluation.overall_score));
+async function buildReport() {
+  const reportLoadEl    = document.getElementById("report-loading");
+  const reportContentEl = document.getElementById("report-content");
+
+  if (state._useV2 && state.sessionId) {
+    reportLoadEl    && reportLoadEl.classList.remove("hidden");
+    reportContentEl && (reportContentEl.style.opacity = "0.3");
+    try {
+      // Best-effort end-round
+      if (state._roundId && state._currentRoundInfo &&
+          state._currentRoundInfo.state === "in_progress") {
+        await fetch(
+          "/v2/interview/session/" + state.sessionId +
+          "/end-round?round_id=" + state._roundId,
+          { method: "POST", headers: authHeaders() }
+        ).catch(() => {});
+      }
+      // Fetch authoritative v2 report
+      const rResp = await fetch(
+        "/v2/interview/session/" + state.sessionId + "/report",
+        { headers: authHeaders() }
+      );
+      if (rResp.ok) {
+        const report = await rResp.json();
+        renderV2Report(report);
+        reportLoadEl    && reportLoadEl.classList.add("hidden");
+        reportContentEl && (reportContentEl.style.opacity = "1");
+        return;
+      }
+    } catch (_) {}
+    reportLoadEl    && reportLoadEl.classList.add("hidden");
+    reportContentEl && (reportContentEl.style.opacity = "1");
+  }
+  _buildReportFromLocalState();
+}
+
+function renderV2Report(report) {
+  // Report fix: validate overall_score before toFixed
+  const overall   = parseFloat(report.overall_score) || 0;
   const overallEl = document.getElementById("report-overall-score");
   overallEl.textContent = overall.toFixed(1);
-  overallEl.className = "overall-score-big__number " + scoreClass(overall);
+  overallEl.className   = "overall-score-big__number " + scoreClass(overall);
 
-  // Role line
   document.getElementById("report-role-line").textContent =
-    `${state.candidateName} · ${state.role} · ${state.experienceLevel}`;
+    (report.candidate_name || "") + " · " + (report.role || "") +
+    " · " + (report.experience_level || "");
 
-  // Dimension averages
+  const scoresEl    = document.getElementById("report-scores");
+  scoresEl.innerHTML = "";
+  const roundScores = report.round_scores || {};
+  for (const [rtype, val] of Object.entries(roundScores)) {
+    if (val != null && !isNaN(val)) {
+      scoresEl.appendChild(makeScoreCard(
+        rtype.charAt(0).toUpperCase() + rtype.slice(1), val
+      ));
+    }
+  }
+
+  const roundReports = report.round_reports || [];
+  if (roundReports.length) {
+    const tbody   = document.getElementById("report-rounds-body");
+    const section = document.getElementById("report-rounds-section");
+    if (tbody && section) {
+      tbody.innerHTML = "";
+      roundReports.forEach(r => {
+        const rScore  = parseFloat(r.score);
+        const score   = !isNaN(rScore) ? rScore.toFixed(1) + "/10" : "—";
+        const sColor  = !isNaN(rScore)
+          ? (rScore >= 7 ? "#198038" : rScore >= 5 ? "#f1c21b" : "#da1e28")
+          : "#697085";
+        // MCQ fix: check presence before using
+        const mcqInfo = (r.correct_count != null && r.total_questions != null)
+          ? " (" + r.correct_count + "/" + r.total_questions + " correct)"
+          : "";
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #eee";
+        tr.innerHTML =
+          '<td style="padding:6px 8px;color:#697085">'   + escHtml(String(r.order || "")) + '</td>' +
+          '<td style="padding:6px 8px;font-weight:500">' + escHtml(r.title || r.round_type || "") + '</td>' +
+          '<td style="padding:6px 8px;color:#697085;text-transform:capitalize">' + escHtml(r.round_type || "") + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#697085">' + escHtml(String(r.turn_count || 0)) + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;font-weight:600;color:' + sColor + '">' +
+            escHtml(score + mcqInfo) + ' ✓</td>';
+        tbody.appendChild(tr);
+      });
+      section.classList.remove("hidden");
+    }
+  }
+
+  const strEl = document.getElementById("report-strengths");
+  strEl.innerHTML = "";
+  dedup(report.strengths || []).forEach(s => strEl.appendChild(makeTag(s, "tag-strength")));
+  if (!strEl.children.length)
+    strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  const weakEl = document.getElementById("report-weaknesses");
+  weakEl.innerHTML = "";
+  dedup(report.weaknesses || []).forEach(w => weakEl.appendChild(makeTag(w, "tag-weakness")));
+  if (!weakEl.children.length)
+    weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+
+  const impEl = document.getElementById("report-improvements");
+  impEl.innerHTML = "";
+  dedup(report.improvement_suggestions || []).forEach(s => impEl.appendChild(makeTag(s, "tag-improve")));
+  document.getElementById("report-improvements-section").style.display =
+    (report.improvement_suggestions || []).length ? "" : "none";
+
+  _renderTurnHistory();
+}
+
+function _buildReportFromLocalState() {
+  const overall   = avg(state.turns.map(t => t.evaluation.overall_score));
+  const overallEl = document.getElementById("report-overall-score");
+  overallEl.textContent = overall.toFixed(1);
+  overallEl.className   = "overall-score-big__number " + scoreClass(overall);
+
+  document.getElementById("report-role-line").textContent =
+    state.candidateName + " · " + state.role + " · " + state.experienceLevel;
+
   const dims = {
     "Technical":     avg(state.turns.map(t => t.evaluation.technical_score)),
     "Relevance":     avg(state.turns.map(t => t.evaluation.relevance_score)),
@@ -1011,10 +2547,9 @@ function buildReport() {
   const scoresEl = document.getElementById("report-scores");
   scoresEl.innerHTML = "";
   for (const [label, val] of Object.entries(dims)) {
-    if (!isNaN(val)) scoresEl.appendChild(makeScoreCard(label, val));
+    if (!isNaN(val) && val > 0) scoresEl.appendChild(makeScoreCard(label, val));
   }
 
-  // Aggregate strengths / weaknesses / suggestions
   const allStrengths   = flatten(state.turns.map(t => t.evaluation.strengths || []));
   const allWeaknesses  = flatten(state.turns.map(t => t.evaluation.weaknesses || []));
   const allSuggestions = flatten(state.turns.map(t =>
@@ -1024,12 +2559,14 @@ function buildReport() {
   const strEl = document.getElementById("report-strengths");
   strEl.innerHTML = "";
   dedup(allStrengths).forEach(s => strEl.appendChild(makeTag(s, "tag-strength")));
-  if (!strEl.children.length) strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+  if (!strEl.children.length)
+    strEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
 
   const weakEl = document.getElementById("report-weaknesses");
   weakEl.innerHTML = "";
   dedup(allWeaknesses).forEach(w => weakEl.appendChild(makeTag(w, "tag-weakness")));
-  if (!weakEl.children.length) weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
+  if (!weakEl.children.length)
+    weakEl.innerHTML = '<span style="color:#697085;font-size:0.875rem">None noted</span>';
 
   const impEl = document.getElementById("report-improvements");
   impEl.innerHTML = "";
@@ -1037,89 +2574,656 @@ function buildReport() {
   document.getElementById("report-improvements-section").style.display =
     allSuggestions.length ? "" : "none";
 
-  // Turn history
+  const plan = state._plan;
+  if (plan && plan.rounds && plan.rounds.length) {
+    const tbody   = document.getElementById("report-rounds-body");
+    const section = document.getElementById("report-rounds-section");
+    if (tbody && section) {
+      tbody.innerHTML = "";
+      plan.rounds.forEach(r => {
+        const rScore     = parseFloat(r.score);
+        const score      = !isNaN(rScore) ? rScore + "/10" : "—";
+        const sColor     = !isNaN(rScore)
+          ? (rScore >= 7 ? "#198038" : rScore >= 5 ? "#f1c21b" : "#da1e28")
+          : "#697085";
+        const stateLabel = r.state === "completed" ? "✓" : r.state === "in_progress" ? "…" : "–";
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #eee";
+        tr.innerHTML =
+          '<td style="padding:6px 8px;color:#697085">'   + escHtml(String(r.order || "")) + '</td>' +
+          '<td style="padding:6px 8px;font-weight:500">' + escHtml(r.title || r.round_type || "") + '</td>' +
+          '<td style="padding:6px 8px;color:#697085;text-transform:capitalize">' + escHtml(r.round_type || "") + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;color:#697085">' + escHtml(String(r.turn_count || 0)) + '</td>' +
+          '<td style="padding:6px 8px;text-align:center;font-weight:600;color:' + sColor + '">' +
+            escHtml(score) + ' ' + stateLabel + '</td>';
+        tbody.appendChild(tr);
+      });
+      section.classList.remove("hidden");
+    }
+  }
+  _renderTurnHistory();
+}
+
+function _renderTurnHistory() {
   const histEl = document.getElementById("turn-history");
   histEl.innerHTML = "";
   state.turns.forEach((turn, i) => {
-    const item = document.createElement("div");
-    item.className = "turn-item";
-    const score = turn.evaluation.overall_score;
-    item.innerHTML = `
-      <div class="turn-item__header" onclick="toggleTurn(this)">
-        <span>Q${i + 1} · ${turn.question.slice(0, 60)}${turn.question.length > 60 ? "…" : ""}</span>
-        <span style="color:${scoreColor(score)}">Score: ${score}/10</span>
-      </div>
-      <div class="turn-item__body">
-        <p class="turn-item__q">${escHtml(turn.question)}</p>
-        <p class="turn-item__a">"${escHtml(turn.answer.slice(0, 200))}${turn.answer.length > 200 ? "…" : ""}"</p>
-        <p class="turn-item__score">Score: ${score}/10</p>
-      </div>
-    `;
+    const score      = turn.evaluation.overall_score;
+    const fb         = turn.evaluation.evaluation || turn.evaluation.feedback || "";
+    const isCorrect  = turn.evaluation.is_correct;
+    const correctOpt = turn.evaluation.correct_option;
+    const item       = document.createElement("div");
+    item.className   = "turn-item";
+    const mcqBadge   = (isCorrect === true)
+      ? ' <span style="color:#198038">✓</span>'
+      : (isCorrect === false)
+        ? ' <span style="color:#da1e28">✗' + (correctOpt ? " (ans: " + correctOpt + ")" : "") + '</span>'
+        : "";
+    item.innerHTML =
+      '<div class="turn-item__header" onclick="toggleTurn(this)">' +
+        '<span>Q' + (i + 1) + ' · ' + escHtml(turn.question.slice(0, 55)) +
+          (turn.question.length > 55 ? "…" : "") + mcqBadge + '</span>' +
+        '<span style="color:' + scoreColor(score) + '">Score: ' + (score || 0) + '/10</span>' +
+      '</div>' +
+      '<div class="turn-item__body">' +
+        '<p class="turn-item__q">' + escHtml(turn.question) + '</p>' +
+        '<p class="turn-item__a">"' + escHtml((turn.answer || "").slice(0, 200)) +
+          ((turn.answer || "").length > 200 ? "…" : "") + '"</p>' +
+        (correctOpt
+          ? '<p style="font-size:0.875rem;color:#697085;margin-bottom:6px">Correct answer: <strong>' +
+            escHtml(correctOpt) + '</strong></p>'
+          : '') +
+        '<p class="turn-item__score">Score: ' + (score || 0) + '/10</p>' +
+        (fb ? '<p class="turn-item__feedback">' + escHtml(fb) + '</p>' : '') +
+      '</div>';
     histEl.appendChild(item);
   });
 }
 
 function toggleTurn(headerEl) {
-  const body = headerEl.nextElementSibling;
-  body.classList.toggle("open");
+  headerEl.nextElementSibling.classList.toggle("open");
 }
 
-/* ── Reset ──────────────────────────────────────────────────────────── */
 function resetAll() {
-  state.sessionId = null;
-  state.candidateName = "";
-  state.role = "";
-  state.experienceLevel = "";
-  state.interviewType = "";
-  state.candidateContext = "";
-  state.currentQuestion = "";
-  state.turnNumber = 0;
-  state.turns = [];
-  state._pendingNextQuestion = null;
-  state._interviewComplete = false;
+  if (typeof resetVoiceState     === "function") resetVoiceState();
+  if (typeof resetGDState        === "function") resetGDState();
+  if (typeof stopRoundTimer      === "function") stopRoundTimer();
+  if (typeof hideRoundTransition === "function") hideRoundTransition();
 
-  document.getElementById("candidate-name").value = "";
-  document.getElementById("job-role").value = "";
-  document.getElementById("experience-level").value = "";
-  document.getElementById("interview-type").value = "";
-  document.getElementById("candidate-context").value = "";
+  Object.assign(state, {
+    sessionId:           null,
+    candidateName:       "",
+    role:                "",
+    experienceLevel:     "",
+    interviewType:       "",
+    candidateContext:    "",
+    currentQuestion:     "",
+    turnNumber:          0,
+    turns:               [],
+    _pendingNextQuestion: null,
+    _pendingNextOptions:  null,
+    _pendingNextGdRole:   null,
+    _pendingNextPersona:  null,
+    _interviewComplete:   false,
+    _inProgress:          false,
+    _plan:                null,
+    _roundId:             null,
+    _roundTitle:          "",
+    _roundOrder:          0,
+    _totalRounds:         0,
+    _useV2:               false,
+    _currentRoundInfo:    null,
+    _pendingVoiceData:    null,
+  });
+
+  const clearField = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val !== undefined ? val : "";
+  };
+  clearField("candidate-name");
+  clearField("job-role");
+  clearField("experience-level");
+  clearField("interview-type");
+  clearField("candidate-context");
+  clearField("answer-input");
+
+  const cc = document.getElementById("context-counter");
+  if (cc) { cc.textContent = "0 / 2000"; cc.className = "char-counter"; }
+  const ac = document.getElementById("answer-counter");
+  if (ac) ac.textContent = "0 / 5000";
+
+  const se = document.getElementById("setup-error");
+  if (se) se.classList.add("hidden");
+  const mr = document.getElementById("meta-round");
+  if (mr) mr.classList.add("hidden");
 
   showScreen("screen-welcome");
 }
 
-/* ── UI helpers ─────────────────────────────────────────────────────── */
-function setInterviewLoading(on, text = "IBM Granite is thinking…") {
-  document.getElementById("interview-loading").classList.toggle("hidden", !on);
-  document.getElementById("interview-content").style.opacity = on ? "0.4" : "1";
-  document.getElementById("interview-content").style.pointerEvents = on ? "none" : "";
-  if (on) document.getElementById("loading-text").textContent = text;
+/* ══════════════════════════════════════════════════════════════════════
+   9. VOICE RECORDING STATE + FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+const voiceState = {
+  recognition:       null,
+  isRecording:       false,
+  finalTranscript:   "",
+  interimTranscript: "",
+  startTime:         null,
+  timerInterval:     null,
+  maxDurationSec:    120,
+  supported:         false,
+  autoRestartCount:  0,        // voice fix: track auto-restart attempts
+};
+
+function initVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) return;
+  voiceState.supported = true;
+
+  const rec = new SpeechRecognition();
+  rec.continuous      = true;
+  rec.interimResults  = true;
+  rec.lang            = "en-US";
+  rec.maxAlternatives = 1;
+
+  rec.onstart = function () {
+    voiceState.isRecording     = true;
+    voiceState.startTime       = Date.now();
+    voiceState.finalTranscript = "";
+    voiceState.autoRestartCount = 0;
+    document.getElementById("voice-transcript-wrap").classList.remove("hidden");
+    document.getElementById("answer-input").style.display  = "none";
+    document.getElementById("answer-counter").style.display = "none";
+    const micBtn = document.getElementById("mic-btn");
+    micBtn.classList.add("recording");
+    document.getElementById("mic-icon").textContent  = "⏹";
+    document.getElementById("mic-label").textContent = "Stop Recording";
+    document.getElementById("voice-status").textContent = "Listening…";
+    document.getElementById("voice-status").classList.add("active");
+    voiceState.timerInterval = setInterval(_updateVoiceTimer, 1000);
+  };
+
+  rec.onresult = function (event) {
+    let interim = "";
+    let final   = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        final += transcript + " ";
+      } else {
+        interim += transcript;
+      }
+    }
+    voiceState.finalTranscript  += final;
+    voiceState.interimTranscript = interim;
+    const display = voiceState.finalTranscript + (interim ? "[" + interim + "]" : "");
+    const el = document.getElementById("voice-transcript");
+    if (el) el.textContent = display;
+    const elapsed = (Date.now() - voiceState.startTime) / 1000;
+    if (elapsed >= voiceState.maxDurationSec) stopVoiceRecording();
+  };
+
+  rec.onerror = function (event) {
+    if (event.error !== "no-speech") {
+      document.getElementById("voice-status").textContent =
+        "Mic error: " + event.error + ". Use text input below.";
+      document.getElementById("voice-status").classList.remove("active");
+      stopVoiceRecording();
+      _showTextInputFallback();
+    }
+  };
+
+  rec.onend = function () {
+    if (voiceState.isRecording) {
+      const elapsed = (Date.now() - voiceState.startTime) / 1000;
+      // Voice fix: limit auto-restarts to 3 to prevent infinite loop
+      if (elapsed < voiceState.maxDurationSec - 1 && voiceState.autoRestartCount < 3) {
+        voiceState.autoRestartCount += 1;
+        try { rec.start(); return; } catch (_) {}
+      }
+    }
+    _finishRecording();
+  };
+
+  voiceState.recognition = rec;
 }
 
-function showInterviewError(msg) {
-  document.getElementById("error-message").textContent = msg;
-  showScreen("screen-error");
+function toggleVoiceRecording() {
+  if (!voiceState.supported) return;
+  if (voiceState.isRecording) stopVoiceRecording();
+  else                        startVoiceRecording();
 }
 
-function updateProgress() {
-  const pct = Math.min((state.turnNumber / state.maxTurns) * 100, 100);
-  document.getElementById("interview-progress").style.width = pct + "%";
+function startVoiceRecording() {
+  if (!voiceState.recognition) return;
+  try {
+    voiceState.recognition.start();
+  } catch (e) {
+    document.getElementById("voice-status").textContent = "Could not start microphone: " + e.message;
+    _showTextInputFallback();
+  }
+}
+
+function stopVoiceRecording() {
+  if (voiceState.recognition && voiceState.isRecording) {
+    try { voiceState.recognition.stop(); } catch (_) {}
+  }
+}
+
+function _finishRecording() {
+  voiceState.isRecording = false;
+  clearInterval(voiceState.timerInterval);
+  voiceState.timerInterval = null;
+
+  // Voice fix: show "No speech detected" if transcript is empty
+  const transcript = voiceState.finalTranscript.trim();
+  const micBtn     = document.getElementById("mic-btn");
+  if (micBtn) {
+    micBtn.classList.remove("recording");
+    document.getElementById("mic-icon").textContent  = "🎙";
+    document.getElementById("mic-label").textContent = "Re-record";
+    if (!transcript) {
+      document.getElementById("voice-status").textContent =
+        "No speech detected. Please use the text input below.";
+      _showTextInputFallback();
+    } else {
+      document.getElementById("voice-status").textContent =
+        "Recording complete. You can edit the transcript above or re-record.";
+    }
+    document.getElementById("voice-status").classList.remove("active");
+  }
+  document.getElementById("voice-timer").textContent = "";
+}
+
+function _updateVoiceTimer() {
+  if (!voiceState.startTime) return;
+  const elapsed   = Math.floor((Date.now() - voiceState.startTime) / 1000);
+  const remaining = voiceState.maxDurationSec - elapsed;
+  const el        = document.getElementById("voice-timer");
+  if (el) el.textContent = remaining > 0 ? _fmtSeconds(remaining) + " left" : "Max time reached";
+}
+
+function _showTextInputFallback() {
+  document.getElementById("voice-transcript-wrap").classList.add("hidden");
+  document.getElementById("answer-input").style.display   = "";
+  document.getElementById("answer-counter").style.display = "";
+  document.getElementById("voice-controls").classList.add("hidden");
+}
+
+/* _fmtSeconds — use Math.ceil to avoid showing 0:00 while time remains */
+function _fmtSeconds(s) {
+  const sInt = Math.ceil(s);
+  const m    = Math.floor(sInt / 60);
+  const sec  = sInt % 60;
+  return String(m).padStart(1, "0") + ":" + String(sec).padStart(2, "0");
+}
+
+function getVoiceAnswer() {
+  if (!voiceState.supported) return null;
+  const transcriptEl   = document.getElementById("voice-transcript");
+  const transcriptText = transcriptEl
+    ? transcriptEl.textContent.replace(/\[.*?\]/g, "").trim()
+    : "";
+  if (!transcriptText) return null;
+  // Voice fix: correct duration formula — seconds to 1dp
+  const durationSec = voiceState.startTime
+    ? Math.round((Date.now() - voiceState.startTime) / 1000 * 10) / 10
+    : null;
+  return {
+    answer:          transcriptText,
+    transcript:      transcriptText,
+    voiceDurationSec: durationSec,
+    isVoice:         true,
+  };
+}
+
+function resetVoiceState() {
+  if (voiceState.isRecording) stopVoiceRecording();
+  clearInterval(voiceState.timerInterval);
+  voiceState.finalTranscript   = "";
+  voiceState.interimTranscript = "";
+  voiceState.isRecording       = false;
+  voiceState.startTime         = null;
+  voiceState.autoRestartCount  = 0;
+  const transcriptEl = document.getElementById("voice-transcript");
+  if (transcriptEl) transcriptEl.textContent = "";
+  document.getElementById("voice-transcript-wrap").classList.add("hidden");
+  document.getElementById("answer-input").style.display   = "";
+  document.getElementById("answer-counter").style.display = "";
+  const micBtn = document.getElementById("mic-btn");
+  if (micBtn) {
+    micBtn.classList.remove("recording");
+    document.getElementById("mic-icon").textContent  = "🎙";
+    document.getElementById("mic-label").textContent = "Record Answer";
+    document.getElementById("voice-status").textContent = "Click to speak your answer";
+  }
+  document.getElementById("voice-timer").textContent = "";
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   10. ROUND TIMER — display-only countdown fed from server elapsed_seconds
+   ══════════════════════════════════════════════════════════════════════ */
+
+const timerState = {
+  intervalHandle:   null,
+  clientStartMs:    null,
+  serverElapsedSec: null,
+  timeLimitSec:     null,
+};
+
+function startRoundTimer(timeLimitMinutes, serverElapsedSec) {
+  clearInterval(timerState.intervalHandle);
+  if (!timeLimitMinutes || timeLimitMinutes <= 0) {
+    document.getElementById("round-timer-wrap").classList.add("hidden");
+    return;
+  }
+  timerState.clientStartMs    = Date.now();
+  timerState.serverElapsedSec = serverElapsedSec || 0;
+  timerState.timeLimitSec     = timeLimitMinutes * 60;
+  document.getElementById("round-timer-wrap").classList.remove("hidden");
+  _renderRoundTimer();
+  timerState.intervalHandle = setInterval(_renderRoundTimer, 1000);
+}
+
+function stopRoundTimer() {
+  clearInterval(timerState.intervalHandle);
+  timerState.intervalHandle = null;
+  document.getElementById("round-timer-wrap").classList.add("hidden");
+}
+
+function _renderRoundTimer() {
+  const clientElapsed = (Date.now() - timerState.clientStartMs) / 1000;
+  const totalElapsed  = timerState.serverElapsedSec + clientElapsed;
+  const remaining     = Math.max(0, timerState.timeLimitSec - totalElapsed);
+  const wrap  = document.getElementById("round-timer-wrap");
+  const disp  = document.getElementById("round-timer-display");
+  const label = document.getElementById("round-timer-label");
+  if (!disp) return;
+
+  // Timer fix: use Math.ceil so display never shows 0:00 while time remains
+  disp.textContent  = _fmtSeconds(remaining);
+  label.textContent = " remaining";
+
+  wrap.classList.remove("warn", "danger");
+  if (remaining <= 60)       wrap.classList.add("danger");
+  else if (remaining <= 180) wrap.classList.add("warn");
+
+  if (remaining <= 0) {
+    clearInterval(timerState.intervalHandle);
+    disp.textContent  = "0:00";
+    label.textContent = " — Time expired";
+    // Timer fix: auto-submit MCQ when timer expires
+    if (mcqState.isMCQRound && mcqState.selectedOption) {
+      submitAnswer();
+    } else if (mcqState.isMCQRound && !mcqState.selectedOption) {
+      // Show timed-out feedback without submission — treat as wrong
+      showMCQFeedback({ is_correct: false, timed_out: true, correct_option: null, explanation: "" });
+      renderTurnEvaluation({
+        overall_score: 0,
+        evaluation: "Time expired — no option selected.",
+        strengths: [], weaknesses: [], improvement_suggestions: [],
+      });
+      state.turns.push({
+        question:   state.currentQuestion,
+        answer:     "(timed out)",
+        evaluation: { overall_score: 0, evaluation: "Time expired.", is_correct: false },
+      });
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   11. GD THREAD FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+const gdState = {
+  isGDRound: false,
+  topic:     "",
+  turns:     [],
+  roundId:   null,
+};
+
+function initGDRound(firstQuestion, roundInfo) {
+  gdState.isGDRound = true;
+  gdState.turns     = [];
+  gdState.roundId   = roundInfo ? roundInfo.round_id : null;
+  document.getElementById("gd-area").classList.remove("hidden");
+  document.getElementById("question-label-text").textContent = "Group Discussion";
+  document.getElementById("freetext-label").textContent      = "Your Contribution";
+
+  const lines = firstQuestion.split("\n").filter(l => l.trim());
+  let topicText = "";
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes("Topic:") && i + 1 < lines.length) {
+      topicText = lines[i + 1].trim();
+      break;
+    }
+  }
+  if (topicText) {
+    gdState.topic = topicText;
+    document.getElementById("gd-topic-text").textContent = topicText;
+    document.getElementById("gd-topic-block").classList.remove("hidden");
+    const instructionIdx = firstQuestion.indexOf("\n\nPlease");
+    if (instructionIdx > -1) {
+      document.getElementById("question-display").textContent =
+        firstQuestion.slice(instructionIdx + 2).trim();
+    }
+  }
+  appendGDTurn("moderator", "Moderator", firstQuestion);
+}
+
+function appendGDTurn(role, persona, text) {
+  gdState.turns.push({ role, persona, text });
+  const thread = document.getElementById("gd-thread");
+  if (!thread) return;
+  const div = document.createElement("div");
+  const cls = role === "moderator"     ? "gd-turn--moderator"
+            : role === "ai_participant" ? "gd-turn--ai"
+            :                            "gd-turn--candidate";
+  div.className = "gd-turn " + cls;
+  const label   = role === "moderator"     ? "Moderator"
+                : role === "ai_participant" ? (persona || "Participant")
+                :                            "You";
+  div.innerHTML =
+    '<div class="gd-turn__header">' + escHtml(label) + '</div>' +
+    '<div class="gd-turn__text">'   + escHtml(text)  + '</div>';
+  thread.appendChild(div);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function resetGDState() {
+  gdState.isGDRound = false;
+  gdState.topic     = "";
+  gdState.turns     = [];
+  gdState.roundId   = null;
+  const area = document.getElementById("gd-area");
+  if (area) area.classList.add("hidden");
+  const thread = document.getElementById("gd-thread");
+  if (thread) thread.innerHTML = "";
+  const topicBlock = document.getElementById("gd-topic-block");
+  if (topicBlock) topicBlock.classList.add("hidden");
+  document.getElementById("question-label-text").textContent = "Interview Question";
+  document.getElementById("freetext-label").textContent      = "Your Answer";
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   12. ROUND TRANSITION FUNCTIONS + advanceToNextRound
+   ══════════════════════════════════════════════════════════════════════ */
+
+function showRoundTransition(summary) {
+  const panel = document.getElementById("round-transition");
+  if (!panel) return;
+  const title       = summary.title || ("Round " + (state._roundOrder || ""));
+  const rScore      = parseFloat(summary.score);
+  const score       = !isNaN(rScore) ? rScore + "/10" : null;
+  // MCQ fix: check presence before using
+  const correctInfo = (summary.correct_count != null && summary.total_questions != null)
+    ? " (" + summary.correct_count + "/" + summary.total_questions + " correct)"
+    : "";
+  document.getElementById("round-transition-title").textContent =
+    title + " Complete" + (score ? " · Score: " + score + correctInfo : "");
+  let msg = summary.feedback || "";
+  if (!msg && score) {
+    msg = "You scored " + score + correctInfo + ". Ready for the next round?";
+  } else if (!msg) {
+    msg = "Round complete. Ready for the next round?";
+  }
+  document.getElementById("round-transition-msg").textContent = msg;
+  panel.classList.remove("hidden");
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  document.getElementById("next-btn").classList.add("hidden");
+  document.getElementById("answer-area").classList.add("hidden");
+  document.getElementById("turn-eval").classList.add("hidden");
+}
+
+function hideRoundTransition() {
+  const panel = document.getElementById("round-transition");
+  if (panel) panel.classList.add("hidden");
+  const nextBtn = document.getElementById("next-btn");
+  if (nextBtn) nextBtn.classList.remove("hidden");
+}
+
+async function advanceToNextRound() {
+  const btn = document.getElementById("continue-round-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Loading…"; }
+
+  try {
+    const resp = await fetch(
+      "/v2/interview/session/" + state.sessionId + "/next-round",
+      {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({}),
+      }
+    );
+
+    if (!resp.ok) {
+      const detail = await safeDetail(resp);
+      showInlineError("Could not advance to next round: " + detail);
+      if (btn) { btn.disabled = false; btn.textContent = "Continue to Next Round →"; }
+      return;
+    }
+
+    const data = await resp.json();
+
+    if (data.plan_complete) {
+      hideRoundTransition();
+      endInterview();
+      return;
+    }
+
+    hideRoundTransition();
+
+    if (data.current_round) {
+      // UI fix: set _roundId BEFORE calling displayQuestion
+      state._roundId          = data.round_id || data.current_round.round_id;
+      state._roundTitle       = data.current_round.title || "";
+      state._roundOrder       = data.current_round.order || (state._roundOrder + 1);
+      state._currentRoundInfo = data.current_round;
+
+      const metaRound = document.getElementById("meta-round");
+      if (metaRound) {
+        metaRound.classList.remove("hidden");
+        metaRound.textContent =
+          "Round " + state._roundOrder + "/" + state._totalRounds +
+          " · " + state._roundTitle;
+      }
+
+      if (data.current_round.time_limit_minutes) {
+        // Timer fix: pass elapsed_seconds: 0 correctly for new round
+        startRoundTimer(data.current_round.time_limit_minutes, 0);
+      } else {
+        stopRoundTimer();
+      }
+    }
+
+    if (data.plan) {
+      state._plan        = data.plan;
+      state._totalRounds = data.plan.total_rounds || state._totalRounds;
+    }
+
+    // GD fix: call initGDRound correctly after advanceToNextRound
+    if (data.current_round && data.current_round.round_type === "gd" && data.first_question) {
+      resetGDState();
+      initGDRound(data.first_question, data.current_round);
+    } else {
+      if (gdState.isGDRound) resetGDState();
+    }
+
+    // MCQ fix: call resetMCQState (now defined)
+    resetMCQState();
+
+    state.turnNumber += 1;
+    document.getElementById("turn-counter").textContent =
+      "Round " + state._roundOrder + " · " + state._roundTitle;
+
+    const firstQ    = data.first_question || "";
+    const firstOpts = data.options || null;
+    displayQuestion(firstQ, firstOpts, data.current_round);
+
+  } catch (err) {
+    showInlineError("Network error advancing round: " + err.message);
+    if (btn) { btn.disabled = false; btn.textContent = "Continue to Next Round →"; }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   13. UTILITY FUNCTIONS
+   ══════════════════════════════════════════════════════════════════════ */
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function avg(arr) {
+  const valid = arr.filter(v => v !== undefined && v !== null && !isNaN(v));
+  if (!valid.length) return 0;
+  return valid.reduce((a, b) => a + b, 0) / valid.length;
+}
+
+function flatten(arrs) {
+  return arrs.reduce((acc, a) => acc.concat(a), []);
+}
+
+function dedup(arr) {
+  const seen = new Set();
+  return arr.filter(x => {
+    const k = (x || "").toLowerCase().trim();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+async function safeDetail(resp) {
+  try {
+    const j = await resp.json();
+    return j.detail || resp.statusText;
+  } catch {
+    return resp.statusText;
+  }
 }
 
 function makeScoreCard(label, val) {
   const card = document.createElement("div");
   card.className = "score-card";
   const num = typeof val === "number" ? val : parseFloat(val) || 0;
-  card.innerHTML = `
-    <div class="score-card__label">${escHtml(label)}</div>
-    <div class="score-card__value ${scoreClass(num)}">${num % 1 === 0 ? num : num.toFixed(1)}</div>
-    <div class="score-card__max">/ 10</div>
-  `;
+  card.innerHTML =
+    '<div class="score-card__label">' + escHtml(label) + '</div>' +
+    '<div class="score-card__value ' + scoreClass(num) + '">' +
+      (num % 1 === 0 ? num : num.toFixed(1)) + '</div>' +
+    '<div class="score-card__max">/ 10</div>';
   return card;
 }
 
 function makeTag(text, cls) {
   const t = document.createElement("span");
-  t.className = "tag " + cls;
+  t.className   = "tag " + cls;
   t.textContent = text;
   return t;
 }
@@ -1136,42 +3240,61 @@ function scoreColor(v) {
   return "#da1e28";
 }
 
-function avg(arr) {
-  const valid = arr.filter(v => v !== undefined && v !== null && !isNaN(v));
-  if (!valid.length) return 0;
-  return valid.reduce((a, b) => a + b, 0) / valid.length;
+function setInterviewLoading(on, text) {
+  document.getElementById("interview-loading").classList.toggle("hidden", !on);
+  document.getElementById("interview-content").style.opacity       = on ? "0.35" : "1";
+  document.getElementById("interview-content").style.pointerEvents = on ? "none" : "";
+  if (on && text) document.getElementById("loading-text").textContent = text;
 }
 
-function flatten(arrs) {
-  return arrs.reduce((acc, a) => acc.concat(a), []);
+function showInlineError(msg) {
+  const banner = document.getElementById("interview-error-banner");
+  document.getElementById("interview-error-text").textContent = msg;
+  banner.classList.remove("hidden");
+  banner.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function dedup(arr) {
-  const seen = new Set();
-  return arr.filter(x => {
-    const k = x.toLowerCase().trim();
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
+function dismissInterviewError() {
+  document.getElementById("interview-error-banner").classList.add("hidden");
 }
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function showFatalError(msg) {
+  document.getElementById("error-message").textContent = msg;
+  state._inProgress = false;
+  showScreen("screen-error");
 }
 
-async function safeDetail(resp) {
-  try {
-    const j = await resp.json();
-    return j.detail || resp.statusText;
-  } catch {
-    return resp.statusText;
+function updateProgress() {
+  let pct;
+  if (state._useV2 && state._plan) {
+    pct = state._plan.progress_percent || 0;
+  } else {
+    pct = Math.min((state.turnNumber / state.maxTurns) * 100, 100);
   }
+  const fill = document.getElementById("interview-progress");
+  const wrap = document.getElementById("progress-bar-wrap");
+  fill.style.width = pct + "%";
+  wrap.setAttribute("aria-valuenow", Math.round(pct));
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   14. DOMContentLoaded INIT
+   ══════════════════════════════════════════════════════════════════════ */
+
+document.addEventListener("DOMContentLoaded", function () {
+  updateAuthNav();
+  initVoice();
+
+  // Pre-fill profile screen if active on load
+  if (document.getElementById("screen-profile").classList.contains("active")) {
+    loadProfile();
+  }
+  // If token exists and setup screen is active on load, prefill
+  if (auth.token &&
+      document.getElementById("screen-setup").classList.contains("active")) {
+    _prefillSetupFromProfile();
+  }
+});
 </script>
 </body>
 </html>

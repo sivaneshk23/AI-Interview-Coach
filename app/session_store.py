@@ -69,8 +69,14 @@ def _db(path: Path = _DB_PATH):
 # ── Serialisation ────────────────────────────────────────────────────
 
 def _session_to_dict(session: InterviewSession) -> dict:
-    """Convert an InterviewSession to a plain dict (JSON-safe)."""
-    return {
+    """
+    Convert an InterviewSession to a plain dict (JSON-safe).
+
+    Backward-compatible: the 'plan' key is only present when the session
+    has a multi-round plan attached (via session._plan).  Old sessions
+    without a plan load and deserialise correctly.
+    """
+    d = {
         "session_id": session.session_id,
         "candidate_name": session.candidate_name,
         "role": session.role,
@@ -85,10 +91,19 @@ def _session_to_dict(session: InterviewSession) -> dict:
             for t in session.turns
         ],
     }
+    # Persist multi-round plan if present
+    if hasattr(session, "_plan") and session._plan is not None:
+        d["plan"] = session._plan.to_dict()
+    return d
 
 
 def _dict_to_session(data: dict) -> InterviewSession:
-    """Reconstruct an InterviewSession from a plain dict."""
+    """
+    Reconstruct an InterviewSession from a plain dict.
+
+    Old sessions without 'plan' continue to load correctly.
+    Multi-round sessions have _plan re-attached.
+    """
     session = InterviewSession(
         session_id=data["session_id"],
         candidate_name=data["candidate_name"],
@@ -104,6 +119,17 @@ def _dict_to_session(data: dict) -> InterviewSession:
             for t in data.get("turns", [])
         ],
     )
+    # Re-attach multi-round plan if present in serialised data
+    if "plan" in data and data["plan"]:
+        try:
+            from interview.plan import InterviewPlan
+            session._plan = InterviewPlan.from_dict(data["plan"])
+        except Exception as exc:
+            logger.warning(
+                "Could not deserialise InterviewPlan: %s. "
+                "Session will operate without a plan.",
+                exc,
+            )
     return session
 
 

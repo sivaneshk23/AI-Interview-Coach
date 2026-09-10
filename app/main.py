@@ -7,7 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.routes import router
+from app.routes import router as legacy_router
+from app.routers.auth import router as auth_router
+from app.routers.candidate import router as candidate_router
+from app.routers.resume import router as resume_router
+from app.routers.multi_round import router as multi_round_router
 
 
 # ── Logging ────────────────────────────────────────────────────────────
@@ -19,6 +23,16 @@ logging.basicConfig(
 
 _logger = logging.getLogger(__name__)
 
+# ── Database initialisation ────────────────────────────────────────────
+# Import and run at module load so tables exist before the first request.
+try:
+    from app.db.base import init_db
+    init_db()
+except Exception as _db_exc:
+    _logger.error("Database initialisation failed: %s", _db_exc)
+    # Do not crash — legacy interview API can still function without the
+    # new auth tables in degraded mode.
+
 # ── App ────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="AI Interview Trainer Agent",
@@ -26,7 +40,7 @@ app = FastAPI(
         "An AI-powered interview training system "
         "using IBM watsonx foundation models."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # ── CORS ───────────────────────────────────────────────────────────────
@@ -41,12 +55,18 @@ app.add_middleware(
         "http://localhost:8080",
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
-# ── API routes ─────────────────────────────────────────────────────────
-app.include_router(router)
+# ── New foundation routers ─────────────────────────────────────────────
+app.include_router(auth_router)
+app.include_router(candidate_router)
+app.include_router(resume_router)
+app.include_router(multi_round_router)
+
+# ── Existing legacy API routes (preserved for backward compatibility) ──
+app.include_router(legacy_router)
 
 # ── Static files (frontend) ────────────────────────────────────────────
 _static_dir = Path(__file__).parent.parent / "static"
@@ -67,7 +87,7 @@ def ui():
     return {
         "name": "AI Interview Trainer Agent",
         "status": "running",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "ui": "static/index.html not found — run from project root.",
     }
 
@@ -78,5 +98,5 @@ def api_root():
     return {
         "name": "AI Interview Trainer Agent",
         "status": "running",
-        "version": "1.0.0",
+        "version": "2.0.0",
     }
