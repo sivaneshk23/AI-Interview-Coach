@@ -1,158 +1,146 @@
 # AI Interview Coach
 
-**AI Interview Coach** is a production-quality, fully role-agnostic interview preparation system built on **IBM watsonx.ai** and **IBM Granite** foundation models as part of the IBM SkillsBuild · Edunet · AICTE internship programme.
+AI Interview Coach is an end-to-end AI-powered interview preparation system built using **IBM watsonx.ai** and **IBM Granite** foundation models. The system uses **Retrieval-Augmented Generation (RAG)** and specialized AI agents to generate role-specific interview questions, evaluate candidate responses, and provide personalized improvement feedback.
+
+The project was developed as part of the **IBM SkillsBuild · Edunet · AICTE internship programme**.
 
 ---
 
-## What it does
+## What It Does
 
-- Conducts adaptive multi-turn mock interviews for **any job role** (free-form text — no hardcoded role list)
-- Generates questions using **IBM Granite** via IBM watsonx.ai, grounded in a RAG knowledge base
-- Evaluates each answer across six dimensions: overall, technical, relevance, clarity, communication, completeness
-- Persists sessions in **SQLite** so the full interview survives across API requests
-- Produces a final **performance report** aggregating scores, strengths, weaknesses, and improvement suggestions
-- Serves a polished single-page UI at `/`
+AI Interview Coach helps users prepare for job interviews through an adaptive interview experience.
+
+### Key Features
+
+- Supports **any job role** through free-form role input.
+- Generates role-specific interview questions using **IBM Granite**.
+- Uses **RAG with FAISS** to ground interview questions and evaluations using a local interview knowledge base.
+- Conducts **adaptive multi-turn mock interviews**.
+- Evaluates answers across multiple dimensions:
+  - Overall performance
+  - Technical knowledge
+  - Relevance
+  - Clarity
+  - Communication
+  - Completeness
+- Provides the **next interview question based on the ongoing session**.
+- Maintains interview sessions using **SQLite**.
+- Generates a final performance report containing:
+  - Overall score
+  - Strengths
+  - Weaknesses
+  - Improvement suggestions
+- Provides a simple browser-based interview interface.
+- Includes REST APIs and interactive **FastAPI Swagger documentation**.
+- Includes automated tests using **pytest**.
+
+---
+
+## Problem Statement
+
+### Problem Statement No. 22 – Interview Trainer Agent
+
+Preparing for job interviews can be difficult because candidates often struggle to find role-specific questions, understand industry expectations, practice realistic interview conversations, and receive meaningful feedback on their answers.
+
+The **Interview Trainer Agent** addresses this problem by using Retrieval-Augmented Generation and IBM Granite models to create a personalized interview preparation system.
+
+Users can provide their **name, experience level, and target job role**. The system retrieves relevant information from its interview knowledge base and generates tailored interview questions. During the mock interview, the candidate's responses are evaluated and personalized feedback is provided.
+
+The objective is to help candidates improve their technical knowledge, communication, relevance, clarity, and completeness before attending real interviews.
+
+---
+
+## Solution
+
+The proposed solution is an **AI-powered Interview Coach** that combines **Agentic AI, RAG, IBM Granite, and session-based interview management**.
+
+The system consists of two specialized AI agents:
+
+### 1. Interviewer Agent
+
+The Interviewer Agent uses **IBM Granite through IBM watsonx.ai** to generate relevant interview questions based on:
+
+- Target job role
+- Experience level
+- Previous answers
+- Retrieved knowledge from the RAG system
+
+The agent supports an adaptive multi-turn interview instead of generating unrelated questions independently.
+
+### 2. Evaluator Agent
+
+The Evaluator Agent analyzes each candidate response using IBM Granite and produces structured evaluation results.
+
+It evaluates:
+
+- Overall performance
+- Technical knowledge
+- Relevance
+- Clarity
+- Communication
+- Completeness
+
+It also provides actionable feedback that can help the candidate improve.
+
+### 3. RAG Engine
+
+The RAG Engine retrieves relevant information from the project's local interview knowledge base.
+
+The documents are processed into embeddings and stored in a **FAISS vector index**. Relevant context is retrieved before generating interview questions or evaluations.
+
+This helps the system produce more role-relevant and grounded responses.
+
+### 4. Session Management
+
+Interview sessions are persisted using **SQLite**.
+
+This allows the system to maintain:
+
+- Candidate information
+- Interview questions
+- Submitted answers
+- Evaluation results
+- Interview progress
+- Final performance summary
 
 ---
 
 ## Architecture
 
-```
-Browser / API client
-        │
-        ▼
-FastAPI (app/main.py)
-        │
-        ├─ POST /interview/session            ← start session, get first question
-        ├─ POST /interview/session/{id}/answer ← submit answer, get evaluation + next question
-        ├─ GET  /interview/session/{id}/summary ← performance report
-        ├─ POST /interview/question            ← legacy stateless question
-        ├─ POST /interview/evaluate            ← legacy stateless evaluation
-        └─ GET  /health                        ← liveness check (public)
-        │
-        ▼
-InterviewEngine (app/interview_engine.py)
-        │
-        ├─ InterviewerAgent  → IBM Granite (question generation, adaptive)
-        ├─ EvaluatorAgent    → IBM Granite (structured JSON evaluation)
-        └─ RAGEngine         → FAISS index over data/knowledge/ (context injection)
-        │
-        ▼
-SessionStore (app/session_store.py) — SQLite at data/sessions.db
-```
+```text
+                    Browser / API Client
+                           │
+                           ▼
+                    FastAPI Application
+                      (app/main.py)
+                           │
+                           ▼
+                    Interview Engine
+                (app/interview_engine.py)
+                           │
+             ┌─────────────┼─────────────┐
+             │             │             │
+             ▼             ▼             ▼
+      Interviewer      Evaluator      RAG Engine
+         Agent            Agent           │
+             │             │              ▼
+             │             │        FAISS Vector
+             │             │           Store
+             │             │              │
+             │             │              ▼
+             │             │       Interview Knowledge
+             │             │          Base Documents
+             │             │
+             └─────────────┼──────────────┘
+                           │
+                           ▼
+                     IBM watsonx.ai
+                           │
+                           ▼
+                     IBM Granite
+                           │
+                           ▼
+                     Session Store
+                        SQLite
 
----
-
-## Prerequisites
-
-- Python 3.12+
-- IBM watsonx.ai account with:
-  - `IBM_API_KEY`
-  - `IBM_PROJECT_ID`
-
----
-
-## Setup
-
-```bash
-# 1. Clone and enter the project
-git clone <repo-url>
-cd AI-Interview-Coach
-
-# 2. Create and activate a virtual environment
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # Linux / macOS
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Configure environment
-cp .env.example .env
-# Edit .env and fill in IBM_API_KEY and IBM_PROJECT_ID
-
-# 5. Run
-uvicorn app.main:app --reload
-```
-
-Open your browser at **http://localhost:8000** to use the interview UI.
-
----
-
-## Environment variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `IBM_API_KEY` | ✅ | — | IBM Cloud API key |
-| `IBM_PROJECT_ID` | ✅ | — | IBM watsonx.ai project ID |
-| `IBM_REGION` | | `jp-tok` | IBM Cloud region |
-| `MODEL_ID` | | `ibm/granite-4-h-small` | IBM Granite model ID |
-| `RAG_DOCUMENTS_DIR` | | `data/knowledge` | Knowledge base directory |
-| `RAG_VECTOR_DIR` | | `data/vector_store` | Pre-built FAISS index directory |
-| `API_KEY` | | _(disabled)_ | Optional bearer token to protect all API endpoints |
-
----
-
-## API
-
-### Session-based (recommended)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/interview/session` | Create session, get first question |
-| `POST` | `/interview/session/{id}/answer` | Submit answer, get evaluation + next question |
-| `GET` | `/interview/session/{id}/summary` | Get full performance report |
-
-### Stateless (legacy)
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/interview/question` | Generate a single question |
-| `POST` | `/interview/evaluate` | Evaluate a single answer |
-| `GET` | `/health` | Liveness check |
-
-Interactive API docs: **http://localhost:8000/docs**
-
----
-
-## Running tests
-
-```bash
-.venv\Scripts\python.exe -m pytest tests/ -v
-```
-
-All 66 tests must pass. Live IBM tests (`test_ibm_connection`, `test_evaluator_agent`, `test_interviewer_agent`, `test_interview_flow`) require valid IBM credentials in `.env`.
-
----
-
-## Technology stack
-
-| Component | Technology |
-|---|---|
-| LLM | IBM Granite via IBM watsonx.ai (`ibm_watsonx_ai` SDK) |
-| RAG | FAISS + sentence-transformers (`all-MiniLM-L6-v2`) |
-| API | FastAPI + Uvicorn |
-| Session persistence | SQLite (stdlib `sqlite3`) |
-| Frontend | Vanilla HTML/CSS/JS SPA (no framework) |
-| Testing | pytest |
-
----
-
-## Project structure
-
-```
-app/              FastAPI application, engine, session store, routes, schemas, config
-agents/           InterviewerAgent, EvaluatorAgent (IBM Granite via utils/llm.py)
-rag/              RAGEngine, VectorStore, embeddings, document loader
-evaluation/       Performance report builder
-utils/            LLM utility (single IBM watsonx.ai call path)
-data/knowledge/   Interview knowledge base (6 topic files)
-data/vector_store/ Pre-built FAISS index
-static/           Single-page UI (index.html)
-tests/            66 pytest tests (mocked + live IBM)
-docs/             Architecture and project specification
-```
-
----
-
-*Built with IBM Bob — IBM SkillsBuild · Edunet · AICTE internship project*
+Built with IBM Bob — IBM SkillsBuild · Edunet · AICTE internship project
